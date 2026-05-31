@@ -36,11 +36,64 @@ TitanOS v1.0/
 
 ## 快速开始
 
+### 系统要求
+
+#### ✅ 支持的环境
+
+| 组件 | 最低版本 | 推荐版本 | 状态 |
+|------|----------|----------|------|
+| **Python** | 3.8 | 3.10+ | ✅ 支持 |
+| **pip** | 21.0 | 23.0+ | ✅ 支持 |
+| **操作系统** | Windows 10 / macOS 10.14 / Ubuntu 18.04 | Windows 11 / macOS 13 / Ubuntu 22.04 | ✅ 支持 |
+
+#### ❌ 不支持的环境
+
+| 组件 | 版本 | 原因 |
+|------|------|------|
+| Python 3.7 | 3.7.x | 不支持 Pydantic V2 |
+| Python 3.6 | 3.6.x | 不支持，已停止维护 |
+| pip < 20.0 | 旧版本 | SSL/TLS 兼容性问题 |
+
+#### ⚠️ 需要注意的环境
+
+| 环境 | 注意事项 |
+|------|----------|
+| **代理环境** | 如果处于公司/学校代理环境，可能需要配置 pip 代理 |
+| **Linux 最小化安装** | 可能需要安装编译工具: `sudo apt install build-essential python3-dev` |
+| **macOS Apple Silicon** | 可能需要: `xcode-select --install` |
+
 ### 安装依赖
+
+#### 1. 升级 pip（推荐）
+
+```bash
+python -m pip install --upgrade pip
+```
+
+#### 2. 安装依赖
 
 ```bash
 cd backend
 pip install -r requirements.txt
+```
+
+#### 3. 使用国内镜像（可选，解决网络问题）
+
+```bash
+# 清华镜像
+pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+# 阿里云镜像
+pip install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple/
+
+# 腾讯云镜像
+pip install -r requirements.txt -i https://mirrors.cloud.tencent.com/pypi/simple/
+```
+
+#### 4. 手动安装（如果 requirements.txt 安装失败）
+
+```bash
+pip install fastapi uvicorn pydantic requests python-jose passlib bcrypt cryptography
 ```
 
 ### 启动服务
@@ -50,6 +103,106 @@ python app.py
 ```
 
 API文档: http://localhost:8000/docs
+Swagger UI: http://localhost:8000/docs
+ReDoc: http://localhost:8000/redoc
+
+### 验证安装
+
+```bash
+curl http://localhost:8000/health
+```
+
+预期输出:
+```json
+{
+  "status": "healthy",
+  "version": "1.0.0",
+  "modules": {
+    "memory": "active",
+    ...
+  }
+}
+```
+
+## 常见问题 (FAQ)
+
+### Q1: pip install 报错 "ValueError: check_hostname requires server_hostname"
+
+**原因**: 代理环境配置问题
+
+**解决方案**:
+```bash
+# 方法1: 关闭代理
+# Windows: 设置环境变量
+set HTTP_PROXY=
+set HTTPS_PROXY=
+
+# 方法2: 使用国内镜像
+pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+# 方法3: 升级 pip
+python -m pip install --upgrade pip
+```
+
+### Q2: 报错 "Microsoft Visual C++ 14.0 is required"
+
+**原因**: Windows 缺少 C++ 编译工具
+
+**解决方案**:
+- 下载 [Build Tools for Visual Studio](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
+- 安装时选择 "C++ build tools"
+
+### Q3: macOS 安装 bcrypt 失败
+
+**解决方案**:
+```bash
+xcode-select --install
+pip install --no-cache-dir bcrypt
+```
+
+### Q4: Linux (Ubuntu/Debian) 缺少依赖
+
+**解决方案**:
+```bash
+sudo apt update
+sudo apt install -y python3-dev build-essential libffi-dev libssl-dev
+pip install -r requirements.txt
+```
+
+### Q5: Windows PowerShell 执行策略限制
+
+**解决方案**:
+```powershell
+# 查看当前策略
+Get-ExecutionPolicy
+
+# 允许本地脚本（推荐）
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+### Q6: 端口 8000 被占用
+
+**解决方案**:
+```bash
+# Windows: 查找占用端口的进程
+netstat -ano | findstr :8000
+taskkill /PID <进程ID> /F
+
+# 或使用其他端口启动
+python app.py --port 8001
+```
+
+### Q7: Python 版本不兼容
+
+**检查 Python 版本**:
+```bash
+python --version
+```
+
+**如果版本低于 3.8**:
+- Windows: 下载 [Python 3.10+](https://www.python.org/downloads/)
+- macOS: `brew install python@3.10`
+- Linux: `sudo apt install python3.10`
 
 ## 核心模块
 
