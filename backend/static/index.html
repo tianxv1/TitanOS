@@ -11,34 +11,49 @@
             box-sizing: border-box;
         }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
-            min-height: 100vh;
-            color: #e0e0e0;
+        :root {
+            --bg-primary: #0B0F19;
+            --bg-card: #141A26;
+            --bg-card-hover: #1A2233;
+            --border: #1E293B;
+            --border-active: #334155;
+            --primary: #7C3AED;
+            --primary-light: #8B5CF6;
+            --accent: #22D3EE;
+            --accent-light: #06B6D4;
+            --text-primary: #F1F5F9;
+            --text-secondary: #94A3B8;
+            --text-muted: #64748B;
+            --success: #22C55E;
+            --warning: #F59E0B;
+            --error: #EF4444;
         }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-primary);
             min-height: 100vh;
+            color: var(--text-primary);
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 240px;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
         }
 
-        header {
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(168, 85, 247, 0.2);
-            padding: 1rem 2rem;
-        }
-
-        .header-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
         }
 
         .logo {
@@ -50,40 +65,91 @@
         .logo-icon {
             width: 40px;
             height: 40px;
-            background: linear-gradient(135deg, #a855f7, #ec4899);
+            background: linear-gradient(135deg, var(--primary), var(--accent));
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            font-size: 1.25rem;
+        }
+
+        .logo-icon svg {
+            width: 24px;
+            height: 24px;
             color: white;
         }
 
         .logo-text h1 {
             font-size: 1.25rem;
             font-weight: 700;
-            color: white;
+            color: var(--text-primary);
         }
 
         .logo-text p {
-            font-size: 0.75rem;
-            color: #a855f7;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 2px;
         }
 
-        .status {
+        .sidebar-nav {
+            flex: 1;
+            padding: 1rem 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            background: transparent;
+            width: 100%;
+            text-align: left;
+            font-size: 0.9375rem;
+        }
+
+        .nav-item:hover {
+            background: var(--bg-card-hover);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(34, 211, 238, 0.1));
+            color: var(--primary-light);
+            border: 1px solid rgba(124, 58, 237, 0.3);
+        }
+
+        .nav-item svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-footer {
+            padding: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .status-indicator {
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            padding: 0.5rem 1rem;
+            padding: 0.75rem;
             background: rgba(34, 197, 94, 0.1);
-            border-radius: 9999px;
+            border-radius: 8px;
+            border: 1px solid rgba(34, 197, 94, 0.2);
         }
 
         .status-dot {
             width: 8px;
             height: 8px;
-            background: #22c55e;
+            background: var(--success);
             border-radius: 50%;
             animation: pulse 2s infinite;
         }
@@ -94,64 +160,553 @@
         }
 
         .status-text {
-            font-size: 0.875rem;
-            color: #22c55e;
+            font-size: 0.8125rem;
+            color: var(--success);
         }
 
-        nav {
-            background: rgba(0, 0, 0, 0.2);
-            border-bottom: 1px solid rgba(168, 85, 247, 0.1);
-            padding: 0 2rem;
-        }
-
-        .nav-tabs {
-            max-width: 1400px;
-            margin: 0 auto;
+        /* Main Content */
+        .main-content {
+            flex: 1;
             display: flex;
-            gap: 0.25rem;
+            flex-direction: column;
+            overflow: hidden;
         }
 
-        .nav-tab {
-            padding: 1rem 1.5rem;
-            border: none;
-            background: transparent;
-            color: #9ca3af;
+        .content-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-card);
+        }
+
+        .content-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .content-header p {
             font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+            color: var(--text-muted);
         }
 
-        .nav-tab:hover {
-            color: white;
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .nav-tab.active {
-            color: #a855f7;
-            border-bottom-color: #a855f7;
-            background: rgba(168, 85, 247, 0.1);
-        }
-
-        main {
+        .content-body {
             flex: 1;
             padding: 2rem;
+            overflow-y: auto;
         }
 
         .tab-content {
             display: none;
+            animation: fadeIn 0.3s ease;
         }
 
         .tab-content.active {
             display: block;
         }
 
-        /* Chat Tab */
-        #chat {
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Status Bar */
+        .status-bar {
+            padding: 0.75rem 2rem;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-left, .status-right {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+        }
+
+        .status-item svg {
+            width: 16px;
+            height: 16px;
+            color: var(--accent);
+        }
+
+        .status-value {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        /* Dashboard Styles */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            border-color: var(--border-active);
+            transform: translateY(-2px);
+        }
+
+        .stat-label {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .stat-value.accent {
+            color: var(--accent);
+        }
+
+        .stat-value.primary {
+            color: var(--primary-light);
+        }
+
+        /* Circular Progress */
+        .growth-section {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .circular-progress {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .progress-ring {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 1.5rem;
+            position: relative;
+        }
+
+        .progress-ring svg {
+            transform: rotate(-90deg);
+        }
+
+        .progress-ring circle {
+            fill: none;
+            stroke-width: 12;
+        }
+
+        .progress-ring .bg {
+            stroke: var(--border);
+        }
+
+        .progress-ring .progress {
+            stroke: url(#gradient);
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1s ease;
+        }
+
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .progress-number {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .progress-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .circular-progress h3 {
+            font-size: 1.125rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .circular-progress p {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        /* Progress Bars */
+        .progress-bars {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+        }
+
+        .progress-bars h3 {
+            font-size: 1.125rem;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+        }
+
+        .progress-item {
+            margin-bottom: 1.5rem;
+        }
+
+        .progress-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-title {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .progress-percent {
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 4px;
+            transition: width 1s ease;
+        }
+
+        /* Memory Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 7px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, var(--primary), var(--accent));
+        }
+
+        .timeline-year {
+            margin-bottom: 2rem;
+        }
+
+        .timeline-year-header {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            padding-left: 1rem;
+        }
+
+        .timeline-month {
+            margin-bottom: 1.5rem;
+        }
+
+        .timeline-month-header {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--accent);
+            margin-bottom: 0.75rem;
+            padding-left: 1rem;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding: 1rem 1.25rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            margin-left: 1rem;
+            transition: all 0.2s;
+        }
+
+        .timeline-item:hover {
+            border-color: var(--primary);
+            transform: translateX(4px);
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -1.75rem;
+            top: 1.25rem;
+            width: 12px;
+            height: 12px;
+            background: var(--primary);
+            border: 3px solid var(--bg-primary);
+            border-radius: 50%;
+        }
+
+        .timeline-item-title {
+            font-size: 0.9375rem;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .timeline-item-desc {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+        }
+
+        .timeline-item-tag {
+            display: inline-block;
+            padding: 0.125rem 0.5rem;
+            background: rgba(124, 58, 237, 0.2);
+            color: var(--primary-light);
+            font-size: 0.6875rem;
+            border-radius: 4px;
+            margin-top: 0.5rem;
+        }
+
+        /* Knowledge Graph */
+        .knowledge-graph-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            height: 500px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .graph-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .graph-node {
+            position: absolute;
+            padding: 0.75rem 1.25rem;
+            background: var(--bg-card);
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 10;
+        }
+
+        .graph-node:hover {
+            background: var(--primary);
+            transform: scale(1.1);
+        }
+
+        .graph-node.center {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border: none;
+            font-size: 1rem;
+            padding: 1rem 1.5rem;
+        }
+
+        .graph-edge {
+            position: absolute;
+            background: var(--border);
+            height: 2px;
+            transform-origin: left center;
+            z-index: 5;
+        }
+
+        .graph-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .graph-stat {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .graph-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .graph-stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        /* Digital Twin */
+        .twin-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .twin-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .twin-card h3 {
+            font-size: 1rem;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .radar-container {
+            width: 100%;
+            height: 250px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .radar-chart {
+            width: 200px;
+            height: 200px;
+        }
+
+        .radar-chart circle {
+            fill: none;
+            stroke: var(--border);
+            stroke-width: 1;
+        }
+
+        .radar-chart polygon {
+            fill: rgba(124, 58, 237, 0.3);
+            stroke: var(--primary);
+            stroke-width: 2;
+        }
+
+        .radar-labels {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 1rem;
+        }
+
+        .radar-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .radar-label-value {
+            display: block;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .style-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .style-item:last-child {
+            border-bottom: none;
+        }
+
+        .style-name {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .style-value {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .persona-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+
+        .persona-item {
+            text-align: center;
+            padding: 1rem;
+            background: var(--bg-primary);
+            border-radius: 8px;
+        }
+
+        .persona-name {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .persona-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .persona-bar {
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+
+        .persona-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 2px;
+        }
+
+        /* Chat Styles */
+        .chat-container {
             display: flex;
             flex-direction: column;
             height: calc(100vh - 200px);
@@ -170,21 +725,17 @@
             display: flex;
             gap: 1rem;
             animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            max-width: 700px;
         }
 
         .message.user {
             flex-direction: row-reverse;
+            margin-left: auto;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .message-avatar {
@@ -194,33 +745,41 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
             flex-shrink: 0;
         }
 
         .message.assistant .message-avatar {
-            background: linear-gradient(135deg, #a855f7, #ec4899);
-            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
         }
 
         .message.user .message-avatar {
-            background: #374151;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+        }
+
+        .message-avatar svg {
+            width: 20px;
+            height: 20px;
             color: white;
         }
 
+        .message.user .message-avatar svg {
+            color: var(--text-secondary);
+        }
+
         .message-content {
-            max-width: 600px;
+            max-width: 500px;
             padding: 1rem 1.25rem;
-            border-radius: 1rem;
+            border-radius: 12px;
         }
 
         .message.assistant .message-content {
-            background: rgba(55, 65, 81, 0.8);
-            border: 1px solid rgba(75, 85, 99, 0.5);
+            background: var(--bg-card);
+            border: 1px solid var(--border);
         }
 
         .message.user .message-content {
-            background: linear-gradient(135deg, #a855f7, #7c3aed);
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
             color: white;
         }
 
@@ -236,9 +795,9 @@
         }
 
         .chat-input {
-            background: rgba(31, 41, 55, 0.8);
-            border: 1px solid rgba(75, 85, 99, 0.5);
-            border-radius: 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
             padding: 1rem;
             margin-top: 1rem;
         }
@@ -250,35 +809,38 @@
 
         .chat-input-form input {
             flex: 1;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(75, 85, 99, 0.5);
-            border-radius: 0.75rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
             padding: 0.875rem 1.25rem;
-            color: white;
+            color: var(--text-primary);
             font-size: 0.9375rem;
             outline: none;
             transition: all 0.2s;
         }
 
         .chat-input-form input:focus {
-            border-color: #a855f7;
-            box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
         }
 
         .chat-input-form input::placeholder {
-            color: #6b7280;
+            color: var(--text-muted);
         }
 
         .chat-input-form button {
-            background: linear-gradient(135deg, #a855f7, #7c3aed);
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
             border: none;
             color: white;
             padding: 0.875rem 2rem;
-            border-radius: 0.75rem;
+            border-radius: 8px;
             font-size: 0.9375rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .chat-input-form button:hover {
@@ -286,291 +848,601 @@
             transform: translateY(-1px);
         }
 
-        /* Dashboard Tab */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+        .chat-input-form button svg {
+            width: 18px;
+            height: 18px;
         }
 
-        .stat-card {
-            background: rgba(31, 41, 55, 0.8);
-            border: 1px solid rgba(75, 85, 99, 0.5);
-            border-radius: 1rem;
-            padding: 1.5rem;
-        }
-
-        .stat-label {
-            font-size: 0.875rem;
-            color: #9ca3af;
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-value {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: white;
-        }
-
-        .stat-value.purple {
-            color: #a855f7;
-        }
-
-        .stat-value.pink {
-            color: #ec4899;
-        }
-
-        .stat-value.blue {
-            color: #3b82f6;
-        }
-
-        .growth-score {
-            background: rgba(31, 41, 55, 0.8);
-            border: 1px solid rgba(75, 85, 99, 0.5);
-            border-radius: 1rem;
+        /* Goals */
+        .goals-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
             padding: 2rem;
-            margin-bottom: 2rem;
-            text-align: center;
         }
 
-        .growth-score h2 {
-            font-size: 1.25rem;
-            color: white;
-            margin-bottom: 1rem;
-        }
-
-        .score-display {
-            font-size: 5rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #a855f7, #ec4899);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .score-label {
-            font-size: 1.25rem;
-            color: #a855f7;
-            margin-top: 0.5rem;
-        }
-
-        .dashboard-section {
-            background: rgba(31, 41, 55, 0.8);
-            border: 1px solid rgba(75, 85, 99, 0.5);
-            border-radius: 1rem;
-            padding: 1.5rem;
-        }
-
-        .dashboard-section h3 {
-            font-size: 1.125rem;
-            color: white;
-            margin-bottom: 1rem;
-        }
-
-        /* Memory Tab */
-        .memory-list {
+        .goal-tree {
             display: flex;
             flex-direction: column;
             gap: 1rem;
         }
 
-        .memory-item {
-            background: rgba(31, 41, 55, 0.8);
-            border: 1px solid rgba(75, 85, 99, 0.5);
-            border-radius: 0.75rem;
-            padding: 1.25rem;
-            transition: all 0.2s;
+        .goal-item {
+            padding: 1rem 1.25rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            border-left: 3px solid var(--primary);
         }
 
-        .memory-item:hover {
-            border-color: rgba(168, 85, 247, 0.5);
-            transform: translateY(-2px);
-        }
-
-        .memory-content {
-            color: white;
-            margin-bottom: 0.75rem;
-        }
-
-        .memory-meta {
+        .goal-header {
             display: flex;
-            gap: 1rem;
+            justify-content: space-between;
             align-items: center;
-        }
-
-        .memory-tags {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .tag {
-            padding: 0.25rem 0.75rem;
-            background: rgba(168, 85, 247, 0.2);
-            color: #a855f7;
-            font-size: 0.75rem;
-            border-radius: 9999px;
-        }
-
-        .memory-time {
-            font-size: 0.75rem;
-            color: #6b7280;
-        }
-
-        /* Placeholder for other tabs */
-        .placeholder {
-            background: rgba(31, 41, 55, 0.8);
-            border: 1px solid rgba(75, 85, 99, 0.5);
-            border-radius: 1rem;
-            padding: 3rem;
-            text-align: center;
-        }
-
-        .placeholder h3 {
-            font-size: 1.25rem;
-            color: white;
             margin-bottom: 0.5rem;
         }
 
-        .placeholder p {
-            color: #6b7280;
+        .goal-title {
+            font-size: 0.9375rem;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .goal-progress {
+            font-size: 0.8125rem;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .goal-bar {
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .goal-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 3px;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            color: var(--border);
+            margin-bottom: 1rem;
+        }
+
+        .empty-state h3 {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state p {
+            font-size: 0.875rem;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <div class="header-content">
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
                 <div class="logo">
-                    <div class="logo-icon">T</div>
+                    <div class="logo-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                    </div>
                     <div class="logo-text">
                         <h1>TitanOS</h1>
                         <p>Personal AI Operating System</p>
                     </div>
                 </div>
-                <div class="status">
+            </div>
+
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-tab="dashboard">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                    </svg>
+                    Dashboard
+                </button>
+                <button class="nav-item" data-tab="chat">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                    Chat
+                </button>
+                <button class="nav-item" data-tab="memory">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Memory
+                </button>
+                <button class="nav-item" data-tab="goals">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                    Goals
+                </button>
+                <button class="nav-item" data-tab="graph">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                    </svg>
+                    Knowledge Graph
+                </button>
+                <button class="nav-item" data-tab="twin">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    Digital Twin
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="status-indicator">
                     <div class="status-dot"></div>
                     <span class="status-text">System Online</span>
                 </div>
             </div>
-        </header>
+        </aside>
 
-        <nav>
-            <div class="nav-tabs">
-                <button class="nav-tab active" data-tab="chat">
-                    <span>💬</span> Chat
-                </button>
-                <button class="nav-tab" data-tab="dashboard">
-                    <span>📊</span> Dashboard
-                </button>
-                <button class="nav-tab" data-tab="memory">
-                    <span>🧠</span> Memory
-                </button>
-                <button class="nav-tab" data-tab="planner">
-                    <span>📋</span> Planner
-                </button>
-                <button class="nav-tab" data-tab="graph">
-                    <span>🔗</span> Knowledge Graph
-                </button>
-                <button class="nav-tab" data-tab="twin">
-                    <span>👤</span> Digital Twin
-                </button>
-            </div>
-        </nav>
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active">
+                <div class="content-header">
+                    <h2>Dashboard</h2>
+                    <p>Your personal AI growth metrics at a glance</p>
+                </div>
+                <div class="content-body">
+                    <div class="dashboard-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">Total Memories</div>
+                            <div class="stat-value" id="statMemories">1,234</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Knowledge Nodes</div>
+                            <div class="stat-value accent">328</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Active Goals</div>
+                            <div class="stat-value primary">18</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Growth Score</div>
+                            <div class="stat-value">78</div>
+                        </div>
+                    </div>
 
-        <main>
-            <div id="chat" class="tab-content active">
-                <div class="chat-messages" id="chatMessages">
-                    <div class="message assistant">
-                        <div class="message-avatar">T</div>
-                        <div class="message-content">
-                            <div class="message-text">你好！我是 TitanOS，你的个人 AI 助手。我拥有记忆、推理、规划和学习能力。有什么我可以帮你的吗？</div>
-                            <div class="message-time" id="welcomeTime"></div>
+                    <div class="growth-section">
+                        <div class="circular-progress">
+                            <div class="progress-ring">
+                                <svg width="200" height="200" viewBox="0 0 200 200">
+                                    <defs>
+                                        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                            <stop offset="0%" style="stop-color:#7C3AED"/>
+                                            <stop offset="100%" style="stop-color:#22D3EE"/>
+                                        </linearGradient>
+                                    </defs>
+                                    <circle class="bg" cx="100" cy="100" r="85"/>
+                                    <circle class="progress" cx="100" cy="100" r="85" 
+                                            stroke-dasharray="534" stroke-dashoffset="117"/>
+                                </svg>
+                                <div class="progress-text">
+                                    <div class="progress-number">78</div>
+                                    <div class="progress-label">Growth</div>
+                                </div>
+                            </div>
+                            <h3>Overall Growth Score</h3>
+                            <p>Expert Level - Keep pushing!</p>
+                        </div>
+
+                        <div class="progress-bars">
+                            <h3>Skill Progress</h3>
+                            <div class="progress-item">
+                                <div class="progress-header">
+                                    <span class="progress-title">Memory Growth</span>
+                                    <span class="progress-percent">85%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 85%"></div>
+                                </div>
+                            </div>
+                            <div class="progress-item">
+                                <div class="progress-header">
+                                    <span class="progress-title">Knowledge Accumulation</span>
+                                    <span class="progress-percent">72%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 72%"></div>
+                                </div>
+                            </div>
+                            <div class="progress-item">
+                                <div class="progress-header">
+                                    <span class="progress-title">Skill Development</span>
+                                    <span class="progress-percent">91%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 91%"></div>
+                                </div>
+                            </div>
+                            <div class="progress-item">
+                                <div class="progress-header">
+                                    <span class="progress-title">Goal Completion</span>
+                                    <span class="progress-percent">68%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 68%"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="chat-input">
-                    <form class="chat-input-form" id="chatForm">
-                        <input type="text" id="chatInput" placeholder="输入你的问题..." autocomplete="off">
-                        <button type="submit">Send</button>
-                    </form>
+            </div>
+
+            <!-- Chat Tab -->
+            <div id="chat" class="tab-content">
+                <div class="content-header">
+                    <h2>Chat</h2>
+                    <p>Interact with your AI assistant</p>
+                </div>
+                <div class="content-body">
+                    <div class="chat-container">
+                        <div class="chat-messages" id="chatMessages">
+                            <div class="message assistant">
+                                <div class="message-avatar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <div class="message-content">
+                                    <div class="message-text">你好！我是 TitanOS，你的个人 AI 助手。我拥有记忆、推理、规划和学习能力。有什么我可以帮你的吗？</div>
+                                    <div class="message-time" id="welcomeTime"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chat-input">
+                            <form class="chat-input-form" id="chatForm">
+                                <input type="text" id="chatInput" placeholder="输入你的问题..." autocomplete="off">
+                                <button type="submit">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                    </svg>
+                                    Send
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div id="dashboard" class="tab-content">
-                <div class="growth-score">
-                    <h2>Growth Score</h2>
-                    <div class="score-display">78</div>
-                    <div class="score-label">⭐ Expert</div>
-                </div>
-                <div class="dashboard-grid">
-                    <div class="stat-card">
-                        <div class="stat-label">Total Memories</div>
-                        <div class="stat-value">1,234</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Experiences</div>
-                        <div class="stat-value purple">56</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Goals</div>
-                        <div class="stat-value pink">18</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Agents</div>
-                        <div class="stat-value blue">8</div>
-                    </div>
-                </div>
-                <div class="dashboard-section">
-                    <h3>Recent Activity</h3>
-                    <p style="color: #6b7280;">Start chatting to see your activity here!</p>
-                </div>
-            </div>
-
+            <!-- Memory Tab -->
             <div id="memory" class="tab-content">
-                <div class="dashboard-section">
-                    <h3>Recent Memories</h3>
-                    <div class="memory-list" id="memoryList">
-                        <p style="color: #6b7280; text-align: center; padding: 2rem;">No memories yet. Start chatting to create memories!</p>
+                <div class="content-header">
+                    <h2>Memory Timeline</h2>
+                    <p>Your life events organized chronologically</p>
+                </div>
+                <div class="content-body">
+                    <div class="timeline">
+                        <div class="timeline-year">
+                            <div class="timeline-year-header">2026</div>
+                            <div class="timeline-month">
+                                <div class="timeline-month-header">June</div>
+                                <div class="timeline-item">
+                                    <div class="timeline-item-title">Learned Deep Learning - CNN Model Training</div>
+                                    <div class="timeline-item-desc">Successfully trained CNN model for image classification</div>
+                                    <span class="timeline-item-tag">Learning</span>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-item-title">TitanOS v1.0 Released</div>
+                                    <div class="timeline-item-desc">First major release of personal AI operating system</div>
+                                    <span class="timeline-item-tag">Project</span>
+                                </div>
+                            </div>
+                            <div class="timeline-month">
+                                <div class="timeline-month-header">May</div>
+                                <div class="timeline-item">
+                                    <div class="timeline-item-title">Won Second Prize in AI Competition</div>
+                                    <div class="timeline-item-desc">Competed against 50+ teams and secured top 3 position</div>
+                                    <span class="timeline-item-tag">Achievement</span>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-item-title">Started Learning Machine Learning</div>
+                                    <div class="timeline-item-desc">Beginner to intermediate ML concepts and algorithms</div>
+                                    <span class="timeline-item-tag">Learning</span>
+                                </div>
+                            </div>
+                            <div class="timeline-month">
+                                <div class="timeline-month-header">April</div>
+                                <div class="timeline-item">
+                                    <div class="timeline-item-title">Completed First Python Project</div>
+                                    <div class="timeline-item-desc">Built a data analysis tool from scratch</div>
+                                    <span class="timeline-item-tag">Project</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div id="planner" class="tab-content">
-                <div class="placeholder">
-                    <h3>Task Planner</h3>
-                    <p>Create plans and track your goals. Powered by TitanOS Planner.</p>
+            <!-- Goals Tab -->
+            <div id="goals" class="tab-content">
+                <div class="content-header">
+                    <h2>Goal Tree</h2>
+                    <p>Track your objectives and milestones</p>
+                </div>
+                <div class="content-body">
+                    <div class="goals-container">
+                        <div class="goal-tree">
+                            <div class="goal-item">
+                                <div class="goal-header">
+                                    <span class="goal-title">AI Engineer Career Path</span>
+                                    <span class="goal-progress">78%</span>
+                                </div>
+                                <div class="goal-bar">
+                                    <div class="goal-bar-fill" style="width: 78%"></div>
+                                </div>
+                            </div>
+                            <div class="goal-item" style="margin-left: 2rem; border-left-color: var(--accent);">
+                                <div class="goal-header">
+                                    <span class="goal-title">Master Machine Learning</span>
+                                    <span class="goal-progress">85%</span>
+                                </div>
+                                <div class="goal-bar">
+                                    <div class="goal-bar-fill" style="width: 85%"></div>
+                                </div>
+                            </div>
+                            <div class="goal-item" style="margin-left: 2rem; border-left-color: var(--accent);">
+                                <div class="goal-header">
+                                    <span class="goal-title">Complete TitanOS Development</span>
+                                    <span class="goal-progress">92%</span>
+                                </div>
+                                <div class="goal-bar">
+                                    <div class="goal-bar-fill" style="width: 92%"></div>
+                                </div>
+                            </div>
+                            <div class="goal-item" style="margin-left: 2rem; border-left-color: var(--accent);">
+                                <div class="goal-header">
+                                    <span class="goal-title">Prepare for Interviews</span>
+                                    <span class="goal-progress">45%</span>
+                                </div>
+                                <div class="goal-bar">
+                                    <div class="goal-bar-fill" style="width: 45%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
+            <!-- Knowledge Graph Tab -->
             <div id="graph" class="tab-content">
-                <div class="placeholder">
-                    <h3>Knowledge Graph</h3>
-                    <p>Visualize entities and relationships. Powered by TitanOS KnowledgeGraph.</p>
+                <div class="content-header">
+                    <h2>Knowledge Graph</h2>
+                    <p>Visual representation of your knowledge network</p>
+                </div>
+                <div class="content-body">
+                    <div class="knowledge-graph-container">
+                        <svg class="graph-canvas" id="knowledgeGraph" viewBox="0 0 800 400">
+                            <defs>
+                                <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" style="stop-color:#7C3AED"/>
+                                    <stop offset="100%" style="stop-color:#22D3EE"/>
+                                </linearGradient>
+                            </defs>
+                            
+                            <!-- Edges -->
+                            <line x1="400" y1="200" x2="250" y2="120" stroke="url(#lineGradient)" stroke-width="2" opacity="0.6"/>
+                            <line x1="400" y1="200" x2="550" y2="120" stroke="url(#lineGradient)" stroke-width="2" opacity="0.6"/>
+                            <line x1="400" y1="200" x2="250" y2="280" stroke="url(#lineGradient)" stroke-width="2" opacity="0.6"/>
+                            <line x1="400" y1="200" x2="550" y2="280" stroke="url(#lineGradient)" stroke-width="2" opacity="0.6"/>
+                            <line x1="400" y1="200" x2="400" y2="80" stroke="url(#lineGradient)" stroke-width="2" opacity="0.6"/>
+                            <line x1="250" y1="120" x2="150" y2="80" stroke="url(#lineGradient)" stroke-width="1.5" opacity="0.4"/>
+                            <line x1="250" y1="120" x2="200" y2="180" stroke="url(#lineGradient)" stroke-width="1.5" opacity="0.4"/>
+                            <line x1="550" y1="120" x2="650" y2="80" stroke="url(#lineGradient)" stroke-width="1.5" opacity="0.4"/>
+                            <line x1="550" y1="280" x2="650" y2="320" stroke="url(#lineGradient)" stroke-width="1.5" opacity="0.4"/>
+                        </svg>
+                        
+                        <!-- Nodes -->
+                        <div class="graph-node center" style="left: 360px; top: 170px;">AI</div>
+                        <div class="graph-node" style="left: 210px; top: 90px;">Machine Learning</div>
+                        <div class="graph-node" style="left: 510px; top: 90px;">Deep Learning</div>
+                        <div class="graph-node" style="left: 210px; top: 250px;">TitanOS</div>
+                        <div class="graph-node" style="left: 510px; top: 250px;">Projects</div>
+                        <div class="graph-node" style="left: 360px; top: 50px;">Python</div>
+                        <div class="graph-node" style="left: 110px; top: 50px;">Statistics</div>
+                        <div class="graph-node" style="left: 160px; top: 160px;">CNN</div>
+                        <div class="graph-node" style="left: 610px; top: 50px;">NLP</div>
+                        <div class="graph-node" style="left: 610px; top: 290px;">Web Dev</div>
+                    </div>
+                    
+                    <div class="graph-stats">
+                        <div class="graph-stat">
+                            <div class="graph-stat-value">328</div>
+                            <div class="graph-stat-label">Total Nodes</div>
+                        </div>
+                        <div class="graph-stat">
+                            <div class="graph-stat-value">512</div>
+                            <div class="graph-stat-label">Total Edges</div>
+                        </div>
+                        <div class="graph-stat">
+                            <div class="graph-stat-value">28ms</div>
+                            <div class="graph-stat-label">Avg Query Time</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
+            <!-- Digital Twin Tab -->
             <div id="twin" class="tab-content">
-                <div class="placeholder">
-                    <h3>Digital Twin</h3>
-                    <p>Your personalized AI profile. Learn your style, preferences, and habits.</p>
+                <div class="content-header">
+                    <h2>Digital Twin</h2>
+                    <p>Your personalized AI profile and personality analysis</p>
+                </div>
+                <div class="content-body">
+                    <div class="twin-grid">
+                        <div class="twin-card">
+                            <h3>Skill Levels</h3>
+                            <div class="radar-container">
+                                <svg class="radar-chart" viewBox="0 0 200 200">
+                                    <circle cx="100" cy="100" r="80"/>
+                                    <circle cx="100" cy="100" r="60"/>
+                                    <circle cx="100" cy="100" r="40"/>
+                                    <circle cx="100" cy="100" r="20"/>
+                                    <polygon points="100,20 173,147 27,147" fill="rgba(124, 58, 237, 0.3)" stroke="#7C3AED" stroke-width="2"/>
+                                    <polygon points="100,40 153,130 47,130" fill="rgba(34, 211, 238, 0.3)" stroke="#22D3EE" stroke-width="2"/>
+                                </svg>
+                            </div>
+                            <div class="radar-labels">
+                                <div class="radar-label">
+                                    <span class="radar-label-value">85%</span>
+                                    Writing
+                                </div>
+                                <div class="radar-label">
+                                    <span class="radar-label-value">72%</span>
+                                    Coding
+                                </div>
+                                <div class="radar-label">
+                                    <span class="radar-label-value">91%</span>
+                                    Learning
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="twin-card">
+                            <h3>Style Metrics</h3>
+                            <div class="style-item">
+                                <span class="style-name">Writing Style</span>
+                                <span class="style-value">85%</span>
+                            </div>
+                            <div class="style-item">
+                                <span class="style-name">Coding Style</span>
+                                <span class="style-value">72%</span>
+                            </div>
+                            <div class="style-item">
+                                <span class="style-name">Learning Style</span>
+                                <span class="style-value">91%</span>
+                            </div>
+                            <div class="style-item">
+                                <span class="style-name">Decision Pattern</span>
+                                <span class="style-value">68%</span>
+                            </div>
+                            <div class="style-item">
+                                <span class="style-name">Problem Solving</span>
+                                <span class="style-value">79%</span>
+                            </div>
+                        </div>
+
+                        <div class="twin-card" style="grid-column: span 2;">
+                            <h3>Personality Profile</h3>
+                            <div class="persona-grid">
+                                <div class="persona-item">
+                                    <div class="persona-name">Analytical</div>
+                                    <div class="persona-value">87%</div>
+                                    <div class="persona-bar">
+                                        <div class="persona-bar-fill" style="width: 87%"></div>
+                                    </div>
+                                </div>
+                                <div class="persona-item">
+                                    <div class="persona-name">Creative</div>
+                                    <div class="persona-value">64%</div>
+                                    <div class="persona-bar">
+                                        <div class="persona-bar-fill" style="width: 64%"></div>
+                                    </div>
+                                </div>
+                                <div class="persona-item">
+                                    <div class="persona-name">Risk Tolerance</div>
+                                    <div class="persona-value">43%</div>
+                                    <div class="persona-bar">
+                                        <div class="persona-bar-fill" style="width: 43%"></div>
+                                    </div>
+                                </div>
+                                <div class="persona-item">
+                                    <div class="persona-name">Social</div>
+                                    <div class="persona-value">56%</div>
+                                    <div class="persona-bar">
+                                        <div class="persona-bar-fill" style="width: 56%"></div>
+                                    </div>
+                                </div>
+                                <div class="persona-item">
+                                    <div class="persona-name">Openness</div>
+                                    <div class="persona-value">82%</div>
+                                    <div class="persona-bar">
+                                        <div class="persona-bar-fill" style="width: 82%"></div>
+                                    </div>
+                                </div>
+                                <div class="persona-item">
+                                    <div class="persona-name">Conscientiousness</div>
+                                    <div class="persona-value">78%</div>
+                                    <div class="persona-bar">
+                                        <div class="persona-bar-fill" style="width: 78%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <script>
-        const memories = [];
-        let memoryId = 0;
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <div class="status-left">
+            <div class="status-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>Memories:</span>
+                <span class="status-value">1,234</span>
+            </div>
+            <div class="status-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                </svg>
+                <span>Knowledge:</span>
+                <span class="status-value">328 nodes</span>
+            </div>
+            <div class="status-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                <span>Goals:</span>
+                <span class="status-value">18 active</span>
+            </div>
+        </div>
+        <div class="status-right">
+            <div class="status-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                <span>Growth Score:</span>
+                <span class="status-value">78</span>
+            </div>
+        </div>
+    </div>
 
+    <script>
         document.addEventListener('DOMContentLoaded', function() {
             const now = new Date();
             document.getElementById('welcomeTime').textContent = now.toLocaleTimeString();
 
-            const navTabs = document.querySelectorAll('.nav-tab');
-            navTabs.forEach(tab => {
-                tab.addEventListener('click', function() {
-                    navTabs.forEach(t => t.classList.remove('active'));
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    navItems.forEach(n => n.classList.remove('active'));
                     this.classList.add('active');
                     
                     const tabId = this.dataset.tab;
@@ -592,7 +1464,11 @@
                 const userDiv = document.createElement('div');
                 userDiv.className = 'message user';
                 userDiv.innerHTML = `
-                    <div class="message-avatar">U</div>
+                    <div class="message-avatar">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                    </div>
                     <div class="message-content">
                         <div class="message-text">${escapeHtml(message)}</div>
                         <div class="message-time">${userTime}</div>
@@ -601,14 +1477,16 @@
                 chatMessages.appendChild(userDiv);
                 chatInput.value = '';
 
-                addMemory(message);
-
                 setTimeout(() => {
                     const assistantTime = new Date().toLocaleTimeString();
                     const assistantDiv = document.createElement('div');
                     assistantDiv.className = 'message assistant';
                     assistantDiv.innerHTML = `
-                        <div class="message-avatar">T</div>
+                        <div class="message-avatar">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                        </div>
                         <div class="message-content">
                             <div class="message-text">收到你的消息！这是 TitanOS 的演示回复。</div>
                             <div class="message-time">${assistantTime}</div>
@@ -621,39 +1499,6 @@
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             });
         });
-
-        function addMemory(content) {
-            memoryId++;
-            const now = new Date();
-            const memory = {
-                id: memoryId,
-                content: content,
-                time: now.toLocaleDateString(),
-                tags: ['recent']
-            };
-            memories.unshift(memory);
-            updateMemoryList();
-        }
-
-        function updateMemoryList() {
-            const memoryList = document.getElementById('memoryList');
-            if (memories.length === 0) {
-                memoryList.innerHTML = '<p style="color: #6b7280; text-align: center; padding: 2rem;">No memories yet. Start chatting to create memories!</p>';
-                return;
-            }
-
-            memoryList.innerHTML = memories.slice(0, 10).map(m => `
-                <div class="memory-item">
-                    <div class="memory-content">${escapeHtml(m.content)}</div>
-                    <div class="memory-meta">
-                        <div class="memory-tags">
-                            ${m.tags.map(t => `<span class="tag">${t}</span>`).join('')}
-                        </div>
-                        <span class="memory-time">${m.time}</span>
-                    </div>
-                </div>
-            `).join('');
-        }
 
         function escapeHtml(text) {
             const div = document.createElement('div');
