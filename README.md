@@ -411,6 +411,40 @@ python app.py
 
 ---
 
+## ❓ 常见问题
+
+### 端口被占用怎么办？
+
+**错误信息：**
+```
+ERROR:    [Errno 10048] error while attempting to bind on address ('0.0.0.0', 8000): 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。
+```
+
+**解决方案：**
+
+1. 查看端口占用情况：
+```bash
+netstat -ano | findstr :8000
+```
+
+2. 找到占用端口的进程 PID（例如：68572），然后杀死该进程：
+```bash
+taskkill /PID 68572 /F
+```
+
+3. 或者强制杀死所有 Python 进程（慎用！）：
+```bash
+taskkill /F /IM python.exe
+```
+
+4. 重新启动 TitanOS：
+```bash
+cd backend
+python app.py
+```
+
+---
+
 ## 📁 项目结构
 
 ```
