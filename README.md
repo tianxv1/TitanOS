@@ -401,13 +401,27 @@ cd backend
 pip install -r requirements.txt
 ```
 
-### 启动
+### 启动后端
 
 ```bash
 python app.py
 ```
 
 访问 http://localhost:8000/docs 查看完整API文档
+
+### 访问前端界面
+
+TitanOS 现在提供了一个完整的 Web 界面，启动后端后直接在浏览器访问：
+
+**http://localhost:8000/**
+
+前端界面包含以下功能：
+- 💬 **Chat** - 与 AI 助手对话（模拟）
+- 📊 **Dashboard** - 查看成长仪表盘和统计数据
+- 🧠 **Memory** - 管理和查看记忆
+- 📋 **Planner** - 任务规划
+- 🔗 **Knowledge Graph** - 知识图谱
+- 👤 **Digital Twin** - 数字分身
 
 ---
 

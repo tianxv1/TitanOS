@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TitanOS - Personal AI Operating System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(168, 85, 247, 0.2);
+            padding: 1rem 2rem;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.25rem;
+            color: white;
+        }
+
+        .logo-text h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .logo-text p {
+            font-size: 0.75rem;
+            color: #a855f7;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(34, 197, 94, 0.1);
+            border-radius: 9999px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .status-text {
+            font-size: 0.875rem;
+            color: #22c55e;
+        }
+
+        nav {
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid rgba(168, 85, 247, 0.1);
+            padding: 0 2rem;
+        }
+
+        .nav-tabs {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .nav-tab {
+            padding: 1rem 1.5rem;
+            border: none;
+            background: transparent;
+            color: #9ca3af;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-tab:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-tab.active {
+            color: #a855f7;
+            border-bottom-color: #a855f7;
+            background: rgba(168, 85, 247, 0.1);
+        }
+
+        main {
+            flex: 1;
+            padding: 2rem;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Chat Tab */
+        #chat {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 200px);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem 0;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .message {
+            display: flex;
+            gap: 1rem;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .message.assistant .message-avatar {
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            color: white;
+        }
+
+        .message.user .message-avatar {
+            background: #374151;
+            color: white;
+        }
+
+        .message-content {
+            max-width: 600px;
+            padding: 1rem 1.25rem;
+            border-radius: 1rem;
+        }
+
+        .message.assistant .message-content {
+            background: rgba(55, 65, 81, 0.8);
+            border: 1px solid rgba(75, 85, 99, 0.5);
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #a855f7, #7c3aed);
+            color: white;
+        }
+
+        .message-text {
+            font-size: 0.9375rem;
+            line-height: 1.6;
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+            opacity: 0.7;
+        }
+
+        .chat-input {
+            background: rgba(31, 41, 55, 0.8);
+            border: 1px solid rgba(75, 85, 99, 0.5);
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .chat-input-form {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .chat-input-form input {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(75, 85, 99, 0.5);
+            border-radius: 0.75rem;
+            padding: 0.875rem 1.25rem;
+            color: white;
+            font-size: 0.9375rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .chat-input-form input:focus {
+            border-color: #a855f7;
+            box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2);
+        }
+
+        .chat-input-form input::placeholder {
+            color: #6b7280;
+        }
+
+        .chat-input-form button {
+            background: linear-gradient(135deg, #a855f7, #7c3aed);
+            border: none;
+            color: white;
+            padding: 0.875rem 2rem;
+            border-radius: 0.75rem;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .chat-input-form button:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        /* Dashboard Tab */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(31, 41, 55, 0.8);
+            border: 1px solid rgba(75, 85, 99, 0.5);
+            border-radius: 1rem;
+            padding: 1.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #9ca3af;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .stat-value.purple {
+            color: #a855f7;
+        }
+
+        .stat-value.pink {
+            color: #ec4899;
+        }
+
+        .stat-value.blue {
+            color: #3b82f6;
+        }
+
+        .growth-score {
+            background: rgba(31, 41, 55, 0.8);
+            border: 1px solid rgba(75, 85, 99, 0.5);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .growth-score h2 {
+            font-size: 1.25rem;
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .score-display {
+            font-size: 5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .score-label {
+            font-size: 1.25rem;
+            color: #a855f7;
+            margin-top: 0.5rem;
+        }
+
+        .dashboard-section {
+            background: rgba(31, 41, 55, 0.8);
+            border: 1px solid rgba(75, 85, 99, 0.5);
+            border-radius: 1rem;
+            padding: 1.5rem;
+        }
+
+        .dashboard-section h3 {
+            font-size: 1.125rem;
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        /* Memory Tab */
+        .memory-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .memory-item {
+            background: rgba(31, 41, 55, 0.8);
+            border: 1px solid rgba(75, 85, 99, 0.5);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            transition: all 0.2s;
+        }
+
+        .memory-item:hover {
+            border-color: rgba(168, 85, 247, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .memory-content {
+            color: white;
+            margin-bottom: 0.75rem;
+        }
+
+        .memory-meta {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .memory-tags {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .tag {
+            padding: 0.25rem 0.75rem;
+            background: rgba(168, 85, 247, 0.2);
+            color: #a855f7;
+            font-size: 0.75rem;
+            border-radius: 9999px;
+        }
+
+        .memory-time {
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+
+        /* Placeholder for other tabs */
+        .placeholder {
+            background: rgba(31, 41, 55, 0.8);
+            border: 1px solid rgba(75, 85, 99, 0.5);
+            border-radius: 1rem;
+            padding: 3rem;
+            text-align: center;
+        }
+
+        .placeholder h3 {
+            font-size: 1.25rem;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+
+        .placeholder p {
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon">T</div>
+                    <div class="logo-text">
+                        <h1>TitanOS</h1>
+                        <p>Personal AI Operating System</p>
+                    </div>
+                </div>
+                <div class="status">
+                    <div class="status-dot"></div>
+                    <span class="status-text">System Online</span>
+                </div>
+            </div>
+        </header>
+
+        <nav>
+            <div class="nav-tabs">
+                <button class="nav-tab active" data-tab="chat">
+                    <span>💬</span> Chat
+                </button>
+                <button class="nav-tab" data-tab="dashboard">
+                    <span>📊</span> Dashboard
+                </button>
+                <button class="nav-tab" data-tab="memory">
+                    <span>🧠</span> Memory
+                </button>
+                <button class="nav-tab" data-tab="planner">
+                    <span>📋</span> Planner
+                </button>
+                <button class="nav-tab" data-tab="graph">
+                    <span>🔗</span> Knowledge Graph
+                </button>
+                <button class="nav-tab" data-tab="twin">
+                    <span>👤</span> Digital Twin
+                </button>
+            </div>
+        </nav>
+
+        <main>
+            <div id="chat" class="tab-content active">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message assistant">
+                        <div class="message-avatar">T</div>
+                        <div class="message-content">
+                            <div class="message-text">你好！我是 TitanOS，你的个人 AI 助手。我拥有记忆、推理、规划和学习能力。有什么我可以帮你的吗？</div>
+                            <div class="message-time" id="welcomeTime"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-input">
+                    <form class="chat-input-form" id="chatForm">
+                        <input type="text" id="chatInput" placeholder="输入你的问题..." autocomplete="off">
+                        <button type="submit">Send</button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="dashboard" class="tab-content">
+                <div class="growth-score">
+                    <h2>Growth Score</h2>
+                    <div class="score-display">78</div>
+                    <div class="score-label">⭐ Expert</div>
+                </div>
+                <div class="dashboard-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Total Memories</div>
+                        <div class="stat-value">1,234</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Experiences</div>
+                        <div class="stat-value purple">56</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Goals</div>
+                        <div class="stat-value pink">18</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Agents</div>
+                        <div class="stat-value blue">8</div>
+                    </div>
+                </div>
+                <div class="dashboard-section">
+                    <h3>Recent Activity</h3>
+                    <p style="color: #6b7280;">Start chatting to see your activity here!</p>
+                </div>
+            </div>
+
+            <div id="memory" class="tab-content">
+                <div class="dashboard-section">
+                    <h3>Recent Memories</h3>
+                    <div class="memory-list" id="memoryList">
+                        <p style="color: #6b7280; text-align: center; padding: 2rem;">No memories yet. Start chatting to create memories!</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="planner" class="tab-content">
+                <div class="placeholder">
+                    <h3>Task Planner</h3>
+                    <p>Create plans and track your goals. Powered by TitanOS Planner.</p>
+                </div>
+            </div>
+
+            <div id="graph" class="tab-content">
+                <div class="placeholder">
+                    <h3>Knowledge Graph</h3>
+                    <p>Visualize entities and relationships. Powered by TitanOS KnowledgeGraph.</p>
+                </div>
+            </div>
+
+            <div id="twin" class="tab-content">
+                <div class="placeholder">
+                    <h3>Digital Twin</h3>
+                    <p>Your personalized AI profile. Learn your style, preferences, and habits.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const memories = [];
+        let memoryId = 0;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const now = new Date();
+            document.getElementById('welcomeTime').textContent = now.toLocaleTimeString();
+
+            const navTabs = document.querySelectorAll('.nav-tab');
+            navTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    navTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const tabId = this.dataset.tab;
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+
+            const chatForm = document.getElementById('chatForm');
+            const chatInput = document.getElementById('chatInput');
+            const chatMessages = document.getElementById('chatMessages');
+
+            chatForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const message = chatInput.value.trim();
+                if (!message) return;
+
+                const userTime = new Date().toLocaleTimeString();
+                const userDiv = document.createElement('div');
+                userDiv.className = 'message user';
+                userDiv.innerHTML = `
+                    <div class="message-avatar">U</div>
+                    <div class="message-content">
+                        <div class="message-text">${escapeHtml(message)}</div>
+                        <div class="message-time">${userTime}</div>
+                    </div>
+                `;
+                chatMessages.appendChild(userDiv);
+                chatInput.value = '';
+
+                addMemory(message);
+
+                setTimeout(() => {
+                    const assistantTime = new Date().toLocaleTimeString();
+                    const assistantDiv = document.createElement('div');
+                    assistantDiv.className = 'message assistant';
+                    assistantDiv.innerHTML = `
+                        <div class="message-avatar">T</div>
+                        <div class="message-content">
+                            <div class="message-text">收到你的消息！这是 TitanOS 的演示回复。</div>
+                            <div class="message-time">${assistantTime}</div>
+                        </div>
+                    `;
+                    chatMessages.appendChild(assistantDiv);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }, 800);
+
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            });
+        });
+
+        function addMemory(content) {
+            memoryId++;
+            const now = new Date();
+            const memory = {
+                id: memoryId,
+                content: content,
+                time: now.toLocaleDateString(),
+                tags: ['recent']
+            };
+            memories.unshift(memory);
+            updateMemoryList();
+        }
+
+        function updateMemoryList() {
+            const memoryList = document.getElementById('memoryList');
+            if (memories.length === 0) {
+                memoryList.innerHTML = '<p style="color: #6b7280; text-align: center; padding: 2rem;">No memories yet. Start chatting to create memories!</p>';
+                return;
+            }
+
+            memoryList.innerHTML = memories.slice(0, 10).map(m => `
+                <div class="memory-item">
+                    <div class="memory-content">${escapeHtml(m.content)}</div>
+                    <div class="memory-meta">
+                        <div class="memory-tags">
+                            ${m.tags.map(t => `<span class="tag">${t}</span>`).join('')}
+                        </div>
+                        <span class="memory-time">${m.time}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
