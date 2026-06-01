@@ -39,6 +39,11 @@ from multi_agent.coordinator import AgentCoordinator, Agent, AgentTask
 from memory.cognitive.memory_system import CognitiveMemorySystem, EpisodicMemory, SemanticMemory, ProceduralMemory
 from marketplace.marketplace import AgentMarketplace, AgentPackage
 
+from chat.chat_engine import ChatEngine
+from rag.embedding import EmbeddingService
+from vector_db.manager import VectorDBManager, vector_db_manager
+
+
 app = FastAPI(title="TitanOS API", version="1.0.0", description="Personal AI Operating System v1.0")
 
 app.add_middleware(
@@ -49,13 +54,34 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount static files for frontend
+# Mount static files for frontend (legacy static HTML)
 static_dir = os.path.join(os.path.dirname(__file__), "static")
 if os.path.exists(static_dir):
     app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
+# Serve Next.js production build (v2.0 React frontend)
+next_static_dir = os.path.join(os.path.dirname(__file__), "..", "frontend", ".next", "static")
+if os.path.exists(next_static_dir):
+    app.mount("/_next/static", StaticFiles(directory=next_static_dir), name="next-static")
 
-memory_engine = MemoryEngine()
+# Serve Next.js public assets
+next_public_dir = os.path.join(os.path.dirname(__file__), "..", "frontend", "public")
+if os.path.exists(next_public_dir):
+    app.mount("/public", StaticFiles(directory=next_public_dir), name="next-public")
+
+
+# Vector DB and Embedding Service (v1.5)
+embedding_service = EmbeddingService(model='simulated', dimension=384)
+vector_db_manager = VectorDBManager()
+vector_db_manager.initialize(provider_type='in_memory', embed_service=embedding_service)
+
+# Update memory_engine to use vector_db
+memory_engine = MemoryEngine(
+    storage_path='database/memories.json',
+    embedding_service=embedding_service,
+    vector_db_manager=vector_db_manager
+)
+
 reasoning_engine = ReasoningEngine()
 planner = Planner()
 skill_store = SkillStore()
@@ -75,6 +101,7 @@ goal_tree = GoalTree()
 multi_agent = AgentCoordinator()
 cognitive_memory = CognitiveMemorySystem()
 marketplace = AgentMarketplace()
+chat_engine = ChatEngine()
 
 
 class MemoryCreate(BaseModel):
@@ -334,15 +361,29 @@ class SkillPractice(BaseModel):
     practice_quality: float = 0.8
 
 
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+
+class ChatRequest(BaseModel):
+    message: str
+    store_to_memory: bool = True
+    importance: float = 0.6
+
+
 @app.get("/")
 async def root():
-    index_path = os.path.join(os.path.dirname(__file__), "static", "index.html")
-    if os.path.exists(index_path):
-        return FileResponse(index_path)
+    next_index_path = os.path.join(os.path.dirname(__file__), "..", "frontend", ".next", "standalone", "index.html")
+    if os.path.exists(next_index_path):
+        return FileResponse(next_index_path)
+    static_index_path = os.path.join(os.path.dirname(__file__), "static", "index.html")
+    if os.path.exists(static_index_path):
+        return FileResponse(static_index_path)
     return {
         "name": "TitanOS",
-        "version": "1.0.0",
-        "description": "Personal AI Operating System - Memory, Reasoning, Planning, Learning, RAG, Agent Runtime, Reflection, Auth, Timeline, Dashboard, Goal Tree, Multi-Agent, Cognitive Memory & Agent Marketplace"
+        "version": "2.0.0",
+        "description": "Personal AI Operating System v2.0 - Knowledge Graph + Neo4j + LLM + React Frontend"
     }
 
 
@@ -385,14 +426,6 @@ async def add_memory(data: MemoryCreate):
     return {"memory": memory.to_dict(), "status": "created"}
 
 
-@app.get("/memory/{memory_id}")
-async def get_memory(memory_id: str):
-    memory = memory_engine.access(memory_id)
-    if not memory:
-        raise HTTPException(status_code=404, detail="Memory not found")
-    return {"memory": memory.to_dict()}
-
-
 @app.get("/memory")
 async def list_memories(limit: int = 20):
     memories = memory_engine.get_recent(limit)
@@ -414,6 +447,14 @@ async def get_important_memories(limit: int = 20):
 @app.get("/memory/stats")
 async def get_memory_stats():
     return memory_engine.get_stats()
+
+
+@app.get("/memory/{memory_id}")
+async def get_memory(memory_id: str):
+    memory = memory_engine.access(memory_id)
+    if not memory:
+        raise HTTPException(status_code=404, detail="Memory not found")
+    return {"memory": memory.to_dict()}
 
 
 @app.patch("/memory/{memory_id}")
@@ -593,6 +634,38 @@ async def get_knowledge_stats():
     return knowledge_graph.get_stats()
 
 
+@app.get("/knowledge/graph")
+async def get_knowledge_graph():
+    """获取知识图谱数据（用于前端可视化）"""
+    return knowledge_graph.get_graph()
+
+
+@app.post("/knowledge/configure")
+async def configure_knowledge_graph(uri: str = "bolt://localhost:7687",
+                                    user: str = "neo4j",
+                                    password: str = "password",
+                                    database: str = "neo4j"):
+    """配置 Neo4j 连接（兼容前端调用）"""
+    global knowledge_graph
+    neo4j_config = {
+        "uri": uri,
+        "username": user,
+        "password": password,
+        "database": database
+    }
+    knowledge_graph = KnowledgeGraph(
+        storage_path="database/knowledge_graph.json",
+        use_neo4j=True,
+        neo4j_config=neo4j_config,
+        llm_model="simulated"
+    )
+    return {
+        "status": "configured",
+        "neo4j_connected": knowledge_graph.neo4j_provider.connected if knowledge_graph.neo4j_provider else False,
+        "config": {"uri": uri, "database": database, "user": user}
+    }
+
+
 @app.delete("/knowledge/entity/{entity_id}")
 async def delete_entity(entity_id: str):
     success = knowledge_graph.delete_entity(entity_id)
@@ -605,6 +678,108 @@ async def delete_entity(entity_id: str):
 async def extract_from_text(text: str):
     result = knowledge_graph.extract_from_text(text)
     return result
+
+
+# V2.0 新增：Neo4j 集成端点
+@app.post("/knowledge/neo4j/init")
+async def init_neo4j(uri: str = "bolt://localhost:7687",
+                     username: str = "neo4j",
+                     password: str = "password",
+                     database: str = "neo4j"):
+    """初始化 Neo4j 连接"""
+    global knowledge_graph
+    neo4j_config = {
+        "uri": uri,
+        "username": username,
+        "password": password,
+        "database": database
+    }
+    knowledge_graph = KnowledgeGraph(
+        storage_path="database/knowledge_graph.json",
+        use_neo4j=True,
+        neo4j_config=neo4j_config,
+        llm_model="simulated"
+    )
+    return {
+        "status": "initialized",
+        "neo4j_connected": knowledge_graph.neo4j_provider.connected if knowledge_graph.neo4j_provider else False,
+        "config": {"uri": uri, "database": database}
+    }
+
+
+@app.get("/knowledge/neo4j/health")
+async def neo4j_health():
+    """检查 Neo4j 连接状态"""
+    if knowledge_graph.use_neo4j and knowledge_graph.neo4j_provider:
+        return knowledge_graph.neo4j_provider.get_stats()
+    return {"status": "Neo4j not configured"}
+
+
+@app.post("/knowledge/neo4j/sync")
+async def sync_to_neo4j():
+    """同步本地知识图谱到 Neo4j"""
+    result = knowledge_graph.sync_to_neo4j()
+    return result
+
+
+@app.post("/knowledge/neo4j/cypher")
+async def execute_cypher(query: str):
+    """执行 Cypher 查询"""
+    results = knowledge_graph.execute_cypher(query)
+    return {"query": query, "results": results}
+
+
+@app.get("/knowledge/path")
+async def find_path_between_entities(from_entity_name: str, to_entity_name: str, max_depth: int = 5):
+    """查找两个实体之间的路径"""
+    from_entity = knowledge_graph.find_entity_by_name(from_entity_name)
+    to_entity = knowledge_graph.find_entity_by_name(to_entity_name)
+    
+    if not from_entity:
+        raise HTTPException(status_code=404, detail=f"Entity '{from_entity_name}' not found")
+    if not to_entity:
+        raise HTTPException(status_code=404, detail=f"Entity '{to_entity_name}' not found")
+    
+    paths = knowledge_graph.find_path(from_entity.id, to_entity.id, max_depth)
+    
+    path_results = []
+    for path in paths:
+        path_data = []
+        for entity, relation in path:
+            path_data.append({
+                "entity": entity.to_dict(),
+                "relation": relation.to_dict() if relation else None
+            })
+        path_results.append(path_data)
+    
+    return {
+        "from": from_entity_name,
+        "to": to_entity_name,
+        "paths_found": len(path_results),
+        "paths": path_results
+    }
+
+
+@app.post("/knowledge/analyze")
+async def analyze_text_with_llm(text: str):
+    """使用 LLM 分析文本，提取实体和关系"""
+    result = knowledge_graph.extract_from_text(text, use_llm=True)
+    
+    # 将提取的实体和关系添加到知识图谱
+    for entity_data in result.get("entities", []):
+        knowledge_graph.add_entity(
+            name=entity_data.get("name", ""),
+            entity_type=entity_data.get("entity_type", "concept"),
+            description=entity_data.get("metadata", {}).get("description", "")
+        )
+    
+    return {
+        "summary": result.get("summary", ""),
+        "entities_found": len(result.get("entities", [])),
+        "relations_found": len(result.get("relations", [])),
+        "cypher_query": result.get("cypher_query", ""),
+        "data": result
+    }
 
 
 @app.get("/knowledge/cypher")
@@ -1606,6 +1781,183 @@ async def get_marketplace_stats():
 @app.get("/marketplace/categories")
 async def get_marketplace_categories():
     return {"categories": marketplace.get_categories()}
+
+
+# ==========================================
+# Chat API
+# ==========================================
+@app.post("/chat")
+async def chat(request: ChatRequest):
+    """Send a chat message and get a response"""
+    # Store user message
+    user_memory_id = None
+    if request.store_to_memory:
+        user_memory = memory_engine.add(
+            content=f"User: {request.message}",
+            importance=request.importance,
+            tags=["chat", "user"]
+        )
+        user_memory_id = user_memory.id
+    
+    chat_engine.add_message(
+        role="user",
+        content=request.message,
+        memory_id=user_memory_id
+    )
+    
+    # Generate a simple response (this will be replaced with LLM in later versions)
+    assistant_response = _generate_simple_response(request.message)
+    
+    # Store assistant message
+    assistant_memory_id = None
+    if request.store_to_memory:
+        assistant_memory = memory_engine.add(
+            content=f"Assistant: {assistant_response}",
+            importance=request.importance * 0.9,
+            tags=["chat", "assistant"]
+        )
+        assistant_memory_id = assistant_memory.id
+    
+    chat_message = chat_engine.add_message(
+        role="assistant",
+        content=assistant_response,
+        memory_id=assistant_memory_id
+    )
+    
+    return {
+        "message": {
+            "id": chat_message.id,
+            "role": chat_message.role,
+            "content": chat_message.content,
+            "timestamp": chat_message.timestamp
+        },
+        "user_memory_id": user_memory_id,
+        "assistant_memory_id": assistant_memory_id,
+        "status": "success"
+    }
+
+
+@app.get("/chat/history")
+async def get_chat_history(limit: int = 50):
+    """Get chat history"""
+    messages = chat_engine.get_recent(limit)
+    return {
+        "messages": [
+            {
+                "id": m.id,
+                "role": m.role,
+                "content": m.content,
+                "timestamp": m.timestamp,
+                "memory_id": m.memory_id
+            }
+            for m in messages
+        ],
+        "total": len(messages)
+    }
+
+
+@app.get("/chat/stats")
+async def get_chat_stats():
+    """Get chat statistics"""
+    return chat_engine.get_stats()
+
+
+@app.delete("/chat/history")
+async def clear_chat_history():
+    """Clear chat history"""
+    chat_engine.clear()
+    return {"status": "cleared"}
+
+
+# ==================== Vector DB API Endpoints (v1.5) ====================
+
+class VectorDBInit(BaseModel):
+    provider: str = 'in_memory'
+    host: Optional[str] = 'localhost'
+    port: Optional[int] = 6333
+    api_key: Optional[str] = None
+    dimension: int = 384
+
+
+@app.post("/vector-db/init")
+async def init_vector_db(config: VectorDBInit):
+    """Initialize or switch Vector DB provider"""
+    success = vector_db_manager.initialize(
+        provider_type=config.provider,
+        embed_service=embedding_service,
+        host=config.host or 'localhost',
+        port=config.port or 6333,
+        api_key=config.api_key,
+        dimension=config.dimension
+    )
+    if success:
+        return {"status": "initialized", "provider": config.provider}
+    return {"status": "failed", "error": "Failed to initialize vector DB"}
+
+
+@app.get("/vector-db/health")
+async def vector_db_health():
+    """Check Vector DB health status"""
+    return vector_db_manager.health_check()
+
+
+@app.get("/vector-db/stats")
+async def vector_db_stats():
+    """Get Vector DB statistics"""
+    return vector_db_manager.get_stats()
+
+
+@app.get("/memory/semantic/{query}")
+async def semantic_search(query: str, limit: int = 10):
+    """Semantic search using vector similarity"""
+    results = memory_engine.semantic_search(query, limit)
+    return {
+        "query": query,
+        "results": [m.to_dict() for m in results],
+        "count": len(results)
+    }
+
+
+@app.post("/memory/sync-vector-db")
+async def sync_memories_to_vector_db():
+    """Sync all existing memories to vector database"""
+    count = memory_engine.sync_to_vector_db()
+    return {"synced": count, "status": "completed"}
+
+
+
+def _generate_simple_response(user_message: str) -> str:
+    """Generate a simple response (placeholder for LLM)"""
+    message_lower = user_message.lower()
+    
+    if "你好" in message_lower or "hello" in message_lower or "hi" in message_lower:
+        return "你好！我是 TitanOS，你的个人 AI 助手。有什么我可以帮你的吗？"
+    
+    if "记忆" in message_lower or "memory" in message_lower:
+        return "我正在记录我们的对话到记忆系统中。你可以在 Memory 页面查看所有记忆！"
+    
+    if "目标" in message_lower or "goal" in message_lower:
+        return "设置目标是个好主意！你可以在 Goals 页面创建和跟踪你的目标。"
+    
+    if "知识" in message_lower or "knowledge" in message_lower:
+        return "知识图谱正在构建中！很快你就能看到我们的知识网络了。"
+    
+    if "学习" in message_lower or "learn" in message_lower:
+        return "学习是进步的关键！我正在记录你的学习过程。"
+    
+    if "谢谢" in message_lower or "thank" in message_lower:
+        return "不客气！很高兴能帮到你 😊"
+    
+    # Default responses
+    default_responses = [
+        f"我理解了，你说的是：{user_message[:50]}...",
+        "这是个有趣的话题！让我想想...",
+        "好的，我记下来了。还有什么我可以帮你的吗？",
+        "收到！我正在记录这个对话到你的记忆系统中。"
+    ]
+    
+    import random
+    return random.choice(default_responses)
 
 
 if __name__ == "__main__":

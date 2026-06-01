@@ -1,15 +1,30 @@
 from typing import List, Optional, Dict, Any, Tuple
 from .entities import Entity, Relation, RELATION_TYPES
+from .neo4j_provider import Neo4jProvider
+from .llm_integrator import LLMIntegrator
 import json
 import os
 
 
 class KnowledgeGraph:
-    def __init__(self, storage_path: str = "database/knowledge_graph.json"):
+    def __init__(self, storage_path: str = "database/knowledge_graph.json",
+                 use_neo4j: bool = False, neo4j_config: Optional[Dict] = None,
+                 llm_model: str = "simulated"):
         self.storage_path = storage_path
         self.entities: Dict[str, Entity] = {}
         self.relations: Dict[str, Relation] = {}
         self.entity_index: Dict[str, List[str]] = {}
+        
+        # Neo4j 集成
+        self.use_neo4j = use_neo4j
+        self.neo4j_provider = None
+        if use_neo4j and neo4j_config:
+            self.neo4j_provider = Neo4jProvider(**neo4j_config)
+            self.neo4j_provider.connect()
+        
+        # LLM 集成
+        self.llm_integrator = LLMIntegrator(model_type=llm_model)
+        
         self._load()
 
     def _load(self):
@@ -46,11 +61,13 @@ class KnowledgeGraph:
         name_lower = entity.name.lower()
         if name_lower not in self.entity_index:
             self.entity_index[name_lower] = []
-        self.entity_index[name_lower].append(entity.id)
+        if entity.id not in self.entity_index[name_lower]:
+            self.entity_index[name_lower].append(entity.id)
 
         if entity.entity_type not in self.entity_index:
             self.entity_index[entity.entity_type] = []
-        self.entity_index[entity.entity_type].append(entity.id)
+        if entity.id not in self.entity_index[entity.entity_type]:
+            self.entity_index[entity.entity_type].append(entity.id)
 
     def add_entity(self, name: str, entity_type: str = "concept",
                    description: str = "", properties: Optional[Dict] = None,
@@ -68,18 +85,45 @@ class KnowledgeGraph:
         )
         self.entities[entity.id] = entity
         self._index_entity(entity)
+        
+        # 同步到 Neo4j
+        if self.use_neo4j and self.neo4j_provider:
+            self.neo4j_provider.create_entity(entity)
+        
         self._save()
         return entity
 
     def find_entity_by_name(self, name: str) -> Optional[Entity]:
+        # 先从内存查找
         name_lower = name.lower()
         entity_ids = self.entity_index.get(name_lower, [])
         if entity_ids:
             return self.entities.get(entity_ids[0])
+        
+        # 如果启用了 Neo4j，从 Neo4j 查找
+        if self.use_neo4j and self.neo4j_provider:
+            entity = self.neo4j_provider.find_entity_by_name(name)
+            if entity:
+                self.entities[entity.id] = entity
+                self._index_entity(entity)
+                return entity
+        
         return None
 
     def get_entity(self, entity_id: str) -> Optional[Entity]:
-        return self.entities.get(entity_id)
+        # 先从内存查找
+        if entity_id in self.entities:
+            return self.entities[entity_id]
+        
+        # 如果启用了 Neo4j，从 Neo4j 查找
+        if self.use_neo4j and self.neo4j_provider:
+            entity = self.neo4j_provider.get_entity(entity_id)
+            if entity:
+                self.entities[entity_id] = entity
+                self._index_entity(entity)
+                return entity
+        
+        return None
 
     def update_entity(self, entity_id: str, **kwargs) -> Optional[Entity]:
         entity = self.entities.get(entity_id)
@@ -132,6 +176,11 @@ class KnowledgeGraph:
             properties=properties or {}
         )
         self.relations[relation.id] = relation
+        
+        # 同步到 Neo4j
+        if self.use_neo4j and self.neo4j_provider:
+            self.neo4j_provider.create_relation(relation)
+        
         self._save()
         return relation
 
@@ -150,6 +199,14 @@ class KnowledgeGraph:
             if relation.from_entity_id == entity_id or relation.to_entity_id == entity_id:
                 if relation_type is None or relation.relation_type == relation_type:
                     results.append(relation)
+        
+        # 如果启用了 Neo4j，补充从 Neo4j 获取的关系
+        if self.use_neo4j and self.neo4j_provider:
+            neo4j_relations = self.neo4j_provider.get_relations(entity_id, relation_type)
+            for rel in neo4j_relations:
+                if rel.id not in self.relations:
+                    results.append(rel)
+        
         return results
 
     def get_neighbors(self, entity_id: str, depth: int = 1,
@@ -187,6 +244,7 @@ class KnowledgeGraph:
 
     def find_path(self, from_entity_id: str, to_entity_id: str,
                   max_depth: int = 5) -> List[List[Tuple[Entity, Relation]]]:
+        # 先尝试内存中的路径查找
         paths = []
         visited = set()
 
@@ -217,6 +275,29 @@ class KnowledgeGraph:
                         visited.remove(current_id)
 
         dfs(from_entity_id, to_entity_id, [], 0)
+        
+        # 如果启用了 Neo4j，补充从 Neo4j 获取的路径
+        if self.use_neo4j and self.neo4j_provider and not paths:
+            neo4j_paths = self.neo4j_provider.find_path(from_entity_id, to_entity_id, max_depth)
+            if neo4j_paths:
+                # 将 Neo4j 路径转换为本地格式
+                for path_data in neo4j_paths:
+                    local_path = []
+                    for item in path_data:
+                        if item["type"] == "node":
+                            entity = self.get_entity(item["id"])
+                            if entity:
+                                local_path.append((entity, None))
+                        elif item["type"] == "relation":
+                            # 找到对应的关系
+                            for rel in self.relations.values():
+                                if rel.id == item["id"]:
+                                    # 更新路径中的关系
+                                    if local_path:
+                                        local_path[-1] = (local_path[-1][0], rel)
+                                    break
+                    paths.append([p for p in local_path if p[1] is not None])
+        
         return paths
 
     def query(self, entity_name: Optional[str] = None,
@@ -251,7 +332,12 @@ class KnowledgeGraph:
 
         return results
 
-    def extract_from_text(self, text: str) -> Dict[str, Any]:
+    def extract_from_text(self, text: str, use_llm: bool = True) -> Dict[str, Any]:
+        """使用 LLM 从文本中提取实体和关系"""
+        if use_llm and self.llm_integrator:
+            return self.llm_integrator.analyze_text(text)
+        
+        # 回退到简单提取
         extracted = {
             "entities": [],
             "relations": []
@@ -293,11 +379,53 @@ class KnowledgeGraph:
         for relation in self.relations.values():
             relation_types[relation.relation_type] = relation_types.get(relation.relation_type, 0) + 1
 
-        return {
+        stats = {
             "total_entities": len(self.entities),
             "total_relations": len(self.relations),
             "entity_types": entity_types,
-            "relation_types": relation_types
+            "relation_types": relation_types,
+            "use_neo4j": self.use_neo4j,
+            "neo4j_connected": self.neo4j_provider.connected if self.neo4j_provider else False
+        }
+
+        # 如果启用了 Neo4j，补充 Neo4j 统计
+        if self.use_neo4j and self.neo4j_provider:
+            neo4j_stats = self.neo4j_provider.get_stats()
+            stats["neo4j"] = neo4j_stats
+
+        return stats
+
+    def get_graph(self) -> Dict[str, Any]:
+        """获取知识图谱的完整数据（用于前端可视化）"""
+        nodes = []
+        edges = []
+        
+        # 构建节点列表
+        for entity in self.entities.values():
+            nodes.append({
+                "id": entity.id,
+                "label": entity.name,
+                "type": entity.entity_type,
+                "description": entity.description,
+                "properties": entity.properties
+            })
+        
+        # 构建边列表
+        for relation in self.relations.values():
+            edges.append({
+                "id": relation.id,
+                "source": relation.from_entity_id,
+                "target": relation.to_entity_id,
+                "type": relation.relation_type,
+                "weight": relation.weight,
+                "properties": relation.properties
+            })
+        
+        return {
+            "nodes": nodes,
+            "edges": edges,
+            "total_nodes": len(nodes),
+            "total_edges": len(edges)
         }
 
     def export_to_cypher(self) -> List[str]:
@@ -323,3 +451,20 @@ class KnowledgeGraph:
             cypher_statements.append(statement)
 
         return cypher_statements
+
+    def sync_to_neo4j(self) -> Dict[str, int]:
+        """同步本地数据到 Neo4j"""
+        if not self.use_neo4j or not self.neo4j_provider:
+            return {"error": "Neo4j not configured"}
+
+        entities = list(self.entities.values())
+        relations = list(self.relations.values())
+        
+        return self.neo4j_provider.batch_import(entities, relations)
+
+    def execute_cypher(self, query: str) -> List[Dict[str, Any]]:
+        """执行 Cypher 查询（仅当启用 Neo4j 时可用）"""
+        if not self.use_neo4j or not self.neo4j_provider:
+            return [{"error": "Neo4j not configured"}]
+        
+        return self.neo4j_provider.execute_cypher(query)

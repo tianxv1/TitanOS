@@ -1,4 +1,4 @@
-# TitanOS v1.1
+# TitanOS v1.5
 
 > 世界上第一个能持续成长的个人AI操作系统
 
@@ -12,20 +12,21 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                           TitanOS v1.1                                  │
+│                           TitanOS v1.5                                  │
 │                   持续成长的个人AI操作系统                                │
 ├─────────────────────────────────────────────────────────────────────────┤
 │                                                                         │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  │
-│  │   💬 Chat   │  │  🎯 Goals   │  │  📅 Timeline │  │  🧠 Knowledge│  │
-│  │   智能对话   │  │   目标管理   │  │   记忆时间线  │  │    知识图谱  │  │
-│  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘  │
+│  ┌─────┬─────────────────────────────────────────────────────────────┐  │
+│  │     │  ┌───────────────────────────────────────────────────────┐  │  │
+│  │ 💬  │  │  Dashboard: Growth 78%  Memories: 1,234  Goals: 18   │  │  │
+│  │ 📊  │  └───────────────────────────────────────────────────────┘  │  │
+│  │ 🧠  │  ┌───────────────────────────────────────────────────────┐  │  │
+│  │ 📋  │  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐  │  │  │
+│  │ 🔗  │  │  │   Chat      │ │  Timeline   │ │    Graph    │  │  │  │
+│  │ 👤  │  │  └─────────────┘ └─────────────┘ └─────────────┘  │  │  │
+│  └─────┴─────────────────────────────────────────────────────────────┘  │
 │                                                                         │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  │
-│  │  📊 Growth  │  │  👤 Digital │  │  🤖 Agents  │  │  🏪 Market  │  │
-│  │  成长仪表盘  │  │    数字分身  │  │   多代理协作  │  │   Agent市场  │  │
-│  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘  │
-│                                                                         │
+│  🎨 紫青配色 | 📱 桌面应用风格 | 📈 数据可视化 | 🔍 语义搜索              │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -45,473 +46,495 @@
 | 🧩 **记忆系统** | Episodic/Semantic/Procedural 三种认知记忆 |
 | 🌐 **知识图谱** | Neo4j 知识推理，实体关系网络 |
 | 🛒 **Agent市场** | 像VS Code Extension一样的Agent生态 |
+| 💬 **Chat + Memory** | ✅ V1 已完成：聊天自动存入记忆系统 |
+| 🔍 **向量搜索** | ✅ V1.5 已完成：Qdrant/Weaviate/Pinecone 集成 |
 
 ---
 
-## 🏗️ 系统架构
+## 🚀 最近更新
+
+### 🧠 V2.0: Knowledge Graph + Neo4j + LLM 集成
+- **Neo4j 图数据库集成** - 支持高性能图查询和路径查找
+- **LLM 实体关系提取** - 自动从文本中提取实体和关系
+- **知识推理引擎** - 支持实体间路径查找和关系推理
+- **Cypher 查询 API** - 直接执行 Cypher 查询
+- **文本分析 API** - `/knowledge/analyze` 使用 LLM 分析文本
+- **新增 API 端点** - `/knowledge/neo4j/init`、`/knowledge/path`、`/knowledge/analyze`
+
+### 🔍 V1.5: Vector DB 集成 - 语义搜索新时代
+- **多种向量数据库支持** - Qdrant、Weaviate、Pinecone
+- **统一 Provider 接口** - 轻松切换不同的向量数据库
+- **语义搜索** - 使用自然语言搜索记忆，查找相关概念
+- **自动 Embedding** - 文本自动转换为向量表示
+- **内存向量存储** - 无需外部依赖，快速上手
+
+### 💬 V1: Chat + Memory 集成
+- **聊天历史** - 自动保存对话记录
+- **记忆同步** - 每次聊天都存入 Memory Engine
+- **智能回复** - 简单回复生成器（后续升级 LLM）
+- **API 端点** - `/chat` `/chat/history` `/chat/stats`
+
+---
+
+## 🗺️ 详细开发路线图
+
+### ✅ V1 - 已完成：Chat + Memory
+- 聊天引擎实现
+- 聊天历史自动存入记忆系统
+- 完整的 UI 界面（侧边栏、紫青配色）
+- Dashboard、Memory Timeline、Knowledge Graph、Digital Twin 全部可视化
+
+### ✅ V1.5 - 已完成：Vector DB 集成 (Qdrant/Weaviate/Pinecone)
+- **VectorDBProvider 基类** - 统一的向量数据库接口
+- **Qdrant 集成** - 高性能向量数据库，支持 gRPC
+- **Weaviate 集成** - 云原生向量搜索引擎
+- **Pinecone 集成** - 托管向量数据库服务
+- **In-Memory 向量存储** - 无需外部依赖
+- **语义搜索 API** - `/memory/semantic/{query}`
+- **向量数据库管理** - `/vector-db/init`、`/vector-db/health`、`/vector-db/stats`
+- **记忆同步** - 将现有记忆同步到向量数据库
+- **前端语义搜索界面** - Memory 页面支持自然语言搜索
+
+### ✅ V2.0 - 已完成：Knowledge Graph + Neo4j、LLM 集成 + React 前端
+- **Neo4j 数据库集成** - 图数据库支持，高性能图查询
+- **LLM 集成** - 实体关系自动提取
+- **知识图谱推理引擎** - 路径查找、关系推理
+- **Cypher 查询支持** - 直接执行 Cypher 查询
+- **文本分析 API** - 使用 LLM 从文本提取知识
+- **知识图谱可视化增强** - 支持多层次展示
+- **Next.js + React 前端** - 完整的 React 应用架构迁移
+
+### 🔲 V3 - Knowledge Graph + Neo4j
+- Neo4j 数据库集成
+- 实体关系自动提取
+- 知识图谱推理
+- 可视化交互增强
+
+### 🔲 V3 - Digital Twin + Personality Engine
+- 建立 Personality Engine（人格引擎）
+- 实时更新：性格、能力、兴趣、价值观
+- 学习模式分析
+- 决策风格识别
+
+### 🔲 V4 - Agent System
+- 让 TitanOS 不只是记录你，而是：
+  - 预测你
+  - 帮助你
+  - 替你执行
+- 多 Agent 协作系统
+- 任务自动化执行
+
+---
+
+## 📊 版本概览表
+
+| 版本 | 状态 | 功能 |
+|------|------|------|
+| v1.0 | ✅ 已发布 | 核心模块完成（17个模块） |
+| v1.1 | ✅ 已完成 | Model Layer、World Model、Plugin SDK |
+| v1.2 | ✅ 已完成 | UI 升级、Chat + Memory 集成 |
+| **v1.5** | ✅ **已完成** | Vector DB 集成（Qdrant/Weaviate/Pinecone）✨ |
+| **v2.0** | ✅ **已完成** | Knowledge Graph + Neo4j、LLM 集成 + React 前端 🧠 |
+| v3.0 | 📅 计划 | Digital Twin + Personality Engine |
+| v4.0 | 📅 计划 | Agent System - 预测、帮助、替你执行 |
+
+---
+
+## 🔧 Vector DB 架构
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                            TitanOS Architecture                          │
+│                        Vector DB Integration                              │
 ├─────────────────────────────────────────────────────────────────────────┤
 │                                                                         │
 │  ┌───────────────────────────────────────────────────────────────────┐ │
-│  │                      User Interface Layer                          │ │
-│  │   Chat | Dashboard | Timeline | Knowledge Graph | Goals | etc.   │ │
+│  │                    VectorDBManager                                 │ │
+│  │  ┌─────────────────────────────────────────────────────────────┐ │ │
+│  │  │                  VectorDBProvider (Interface)                 │ │ │
+│  │  │  - connect() / disconnect()                                 │ │ │
+│  │  │  - upsert() / search() / delete()                          │ │ │
+│  │  │  - create_collection() / collection_exists()               │ │ │
+│  │  └─────────────────────────────────────────────────────────────┘ │ │
 │  └───────────────────────────────────────────────────────────────────┘ │
 │                                   │                                     │
+│         ┌─────────────────────────┼─────────────────────────┐          │
+│         │                         │                         │          │
+│  ┌──────▼──────┐          ┌──────▼──────┐          ┌──────▼──────┐     │
+│  │   Qdrant   │          │   Weaviate  │          │   Pinecone  │     │
+│  │  Provider  │          │   Provider  │          │   Provider  │     │
+│  └─────────────┘          └─────────────┘          └─────────────┘     │
+│         │                         │                         │          │
+│  ┌──────▼──────┐          ┌──────▼──────┐          ┌──────▼──────┐     │
+│  │ - gRPC     │          │ - REST API  │          │ - Cloud     │     │
+│  │ - HNSW     │          │ - GraphQL   │          │ - Serverless│     │
+│  │ - Payload  │          │ - Modules   │          │ - Managed   │     │
+│  └─────────────┘          └─────────────┘          └─────────────┘     │
+│                                                                         │
 │  ┌───────────────────────────────────────────────────────────────────┐ │
-│  │                      API Gateway (FastAPI)                        │ │
+│  │                    InMemoryProvider (Default)                      │ │
+│  │  - No external dependencies                                        │ │
+│  │  - Perfect for development and testing                             │ │
+│  │  - Easy to switch to production DB later                           │ │
 │  └───────────────────────────────────────────────────────────────────┘ │
-│                                   │                                     │
-│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────────────┐ │
-│  │   Model Layer   │  │  Plugin SDK     │  │    World Model          │ │
-│  │  GPT/Claude/    │  │  Agent Plugin   │  │  Cause → Effect →       │ │
-│  │  Gemini/Local   │  │  Development    │  │  Prediction             │ │
-│  └─────────────────┘  └─────────────────┘  └─────────────────────────┘ │
-│                                   │                                     │
-│  ┌───────────────────────────────────────────────────────────────────┐ │
-│  │                        Cognitive Engine                           │ │
-│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────────────┐ │ │
-│  │  │  Brain   │  │ Planner  │  │ Executor │  │    Reflection     │ │ │
-│  │  │ (推理)    │  │ (规划)    │  │ (执行)    │  │    (反思)         │ │ │
-│  │  └──────────┘  └──────────┘  └──────────┘  └──────────────────┘ │ │
-│  └───────────────────────────────────────────────────────────────────┘ │
-│                                   │                                     │
-│  ┌───────────────────────────────────────────────────────────────────┐ │
-│  │                         Memory System                             │ │
-│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────────────┐ │ │
-│  │  │ Episodic │  │ Semantic │  │Procedural│  │   Experience     │ │ │
-│  │  │ (情景)    │  │ (语义)    │  │ (技能)    │  │   (经验)         │ │ │
-│  │  └──────────┘  └──────────┘  └──────────┘  └──────────────────┘ │ │
-│  └───────────────────────────────────────────────────────────────────┘ │
-│                                   │                                     │
-│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────────────┐ │
-│  │ Knowledge Graph │  │      RAG        │  │     Digital Twin       │ │
-│  │    (Neo4j)     │  │  Retrieval      │  │    (用户画像)           │ │
-│  └─────────────────┘  └─────────────────┘  └─────────────────────────┘ │
 │                                                                         │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🤖 AI Model Layer（统一接口）
+## 💻 Vector DB API 使用示例
 
-TitanOS 不绑定特定 LLM，支持多种模型：
+### 初始化向量数据库
 
-```python
-class ModelProvider:
-    """统一模型接口"""
-    async def generate(self, prompt: str, model: str = "gpt-4") -> str:
-        """生成文本"""
-        pass
-    
-    async def embedding(self, text: str) -> List[float]:
-        """文本向量化"""
-        pass
-    
-    async def rerank(self, query: str, documents: List[str]) -> List[float]:
-        """语义重排序"""
-        pass
+```bash
+# 使用内置内存向量存储（默认，无需配置）
+curl -X POST http://localhost:8000/vector-db/init \
+  -H "Content-Type: application/json" \
+  -d '{"provider": "in_memory"}'
+
+# 使用 Qdrant
+curl -X POST http://localhost:8000/vector-db/init \
+  -H "Content-Type: application/json" \
+  -d '{"provider": "qdrant", "host": "localhost", "port": 6333}'
+
+# 使用 Weaviate
+curl -X POST http://localhost:8000/vector-db/init \
+  -H "Content-Type: application/json" \
+  -d '{"provider": "weaviate", "host": "localhost", "port": 8080}'
+
+# 使用 Pinecone
+curl -X POST http://localhost:8000/vector-db/init \
+  -H "Content-Type: application/json" \
+  -d '{"provider": "pinecone", "api_key": "your-api-key", "environment": "us-west1-gcp"}'
 ```
 
-| 模型 | 状态 | 用途 |
-|------|------|------|
-| **GPT-4/3.5** | 🔌 可插拔 | 默认推理引擎 |
-| **Claude 3** | 🔌 可插拔 | 长文本分析 |
-| **Gemini Pro** | 🔌 可插拔 | 多模态支持 |
-| **DeepSeek** | 🔌 可插拔 | 中文优化 |
-| **Qwen** | 🔌 可插拔 | 开源选择 |
-| **Local LLM** | 🔌 可插拔 | Ollama/LM Studio |
+### 语义搜索
 
----
+```bash
+# 自然语言搜索记忆
+curl "http://localhost:8000/memory/semantic/What%20did%20I%20learn%20about%20Python?limit=10"
 
-## 📱 界面预览
-
-### Dashboard（成长仪表盘）
-
-```
-┌────────────────────────────────────────────────────────────────┐
-│                     Growth Dashboard                            │
-├────────────────────────────────────────────────────────────────┤
-│                                                                │
-│    ┌─────────────────────────────────────────────────────┐      │
-│    │              Growth Score: 78/100    ⭐ Expert     │      │
-│    │              ████████████████████░░░░              │      │
-│    └─────────────────────────────────────────────────────┘      │
-│                                                                │
-│    ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐   │
-│    │ Memories │  │Experiences│  │   Goals  │  │  Agents  │   │
-│    │   1,234  │  │    56    │  │    18    │  │    8     │   │
-│    └──────────┘  └──────────┘  └──────────┘  └──────────┘   │
-│                                                                │
-│    ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐   │
-│    │Knowledge │  │   KG     │  │  Task    │  │ Learning │   │
-│    │  Nodes   │  │  Edges   │  │ Success  │  │ Progress │   │
-│    │   328    │  │   512    │  │   87%    │  │   68%    │   │
-│    └──────────┘  └──────────┘  └──────────┘  └──────────┘   │
-│                                                                │
-└────────────────────────────────────────────────────────────────┘
+# Response:
+{
+  "query": "What did I learn about Python?",
+  "results": [
+    {
+      "id": "mem-123",
+      "content": "Learned Python basics - variables, loops, functions",
+      "importance": 0.8,
+      "tags": ["learning", "python"]
+    }
+  ],
+  "count": 1
+}
 ```
 
-### Timeline（记忆时间线）
+### 同步记忆到向量数据库
 
-```
-┌────────────────────────────────────────────────────────────────┐
-│                        Memory Timeline                          │
-├────────────────────────────────────────────────────────────────┤
-│                                                                │
-│  2026                                                          │
-│  │                                                            │
-│  ├── 6月                                                       │
-│  │   ├── 🌟 学习深度学习 - CNN模型训练成功 [重要]                │
-│  │   └── 📝 参加AI竞赛 - 获得二等奖                             │
-│  │                                                            │
-│  ├── 5月                                                       │
-│  │   ├── 🚀 TitanOS v1.0发布                                   │
-│  │   └── 💼 获得实习Offer                                      │
-│  │                                                            │
-│  └── 4月                                                       │
-│      ├── 📚 学习机器学习基础                                     │
-│      └── 🔧 完成第一个Python项目                                 │
-│                                                                │
-└────────────────────────────────────────────────────────────────┘
+```bash
+# 将所有现有记忆同步到向量数据库
+curl -X POST http://localhost:8000/memory/sync-vector-db
+
+# Response:
+{
+  "synced": 150,
+  "status": "completed"
+}
 ```
 
-### Knowledge Graph（知识图谱）
+### 检查向量数据库状态
 
-```
-┌────────────────────────────────────────────────────────────────┐
-│                     Knowledge Graph                            │
-├────────────────────────────────────────────────────────────────┤
-│                                                                │
-│                          深度学习                               │
-│                        ↙      ↓      ↘                          │
-│                  CNN        RNN       Transformer              │
-│                    ↓                                    │
-│                  CNN结构 ←── 图像处理 ──→ NLP                  │
-│                              ↓                                 │
-│                        机器学习 ←── 特征工程 ←── 数据处理        │
-│                              ↓                                 │
-│                          人工智能                               │
-│                              │                                 │
-│                         [你] ←── 研究兴趣 ──→ 计算机视觉         │
-│                                                                │
-└────────────────────────────────────────────────────────────────┘
-```
+```bash
+# 健康检查
+curl http://localhost:8000/vector-db/health
 
-### Goal Tree（目标树）
-
-```
-┌────────────────────────────────────────────────────────────────┐
-│                         Goal Tree                              │
-├────────────────────────────────────────────────────────────────┤
-│                                                                │
-│                              🎯 Goal                            │
-│                    ┌─────────┼─────────┐                        │
-│              Career        Learning        Health              │
-│           ┌────┐   │   ┌────┐   │   ┌────┐                   │
-│        AI Eng  │  AI  │  ML  │ │ Exercise │                  │
-│      ┌───┴───┐ │      │      │ │    │     │                  │
-│   TitanOS  Interview  DeepLearning  3x/week                  │
-│      │        │        │           │                           │
-│   v1.0完成   Offer获得  CNN掌握     Sleep 8h                   │
-│                                                                │
-│   Progress: ████████████░░░ 78%                                │
-│                                                                │
-└────────────────────────────────────────────────────────────────┘
-```
-
-### Multi-Agent（多代理协作）
-
-```
-┌────────────────────────────────────────────────────────────────┐
-│                      Multi-Agent Workflow                       │
-├────────────────────────────────────────────────────────────────┤
-│                                                                │
-│    ┌──────────────┐                                            │
-│    │  User Goal   │                                            │
-│    │ "开发一个    │                                            │
-│    │   网站"      │                                            │
-│    └──────┬───────┘                                            │
-│           │                                                     │
-│           ▼                                                     │
-│    ┌──────────────┐                                            │
-│    │   Research  │  🔍 收集需求、技术调研                        │
-│    │    Agent    │  → 市场分析、竞品调研                        │
-│    └──────┬───────┘                                            │
-│           │                                                     │
-│           ▼                                                     │
-│    ┌──────────────┐                                            │
-│    │   Planner   │  📋 任务规划、里程碑                          │
-│    │    Agent   │  → 前端、后端、数据库设计                      │
-│    └──────┬───────┘                                            │
-│           │                                                     │
-│           ▼                                                     │
-│    ┌──────────────┐                                            │
-│    │   Coding    │  💻 代码实现                                 │
-│    │    Agent    │  → REST API、数据库、UI                     │
-│    └──────┬───────┘                                            │
-│           │                                                     │
-│           ▼                                                     │
-│    ┌──────────────┐                                            │
-│    │   Review    │  ✅ 代码审查、测试                           │
-│    │    Agent    │  → 质量检查、性能优化                        │
-│    └──────┬───────┘                                            │
-│           │                                                     │
-│           ▼                                                     │
-│    ┌──────────────┐                                            │
-│    │   ✓ Done!   │  🚀 网站成功部署                             │
-│    └──────────────┘                                            │
-│                                                                │
-└────────────────────────────────────────────────────────────────┘
-```
-
-### Agent Marketplace（Agent市场）
-
-```
-┌────────────────────────────────────────────────────────────────┐
-│                      Agent Marketplace                          │
-├────────────────────────────────────────────────────────────────┤
-│                                                                │
-│  [🔍 Search Agents...]                    [Categories ▼]        │
-│                                                                │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │ ⭐ Featured                                                │  │
-│  ├──────────────────────────────────────────────────────────┤  │
-│  │                                                           │  │
-│  │  ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌────────┐│  │
-│  │  │  Search    │ │ Research   │ │  Coding    │ │Review  ││  │
-│  │  │   Agent    │ │   Agent    │ │   Agent    │ │ Agent  ││  │
-│  │  │ ⭐4.8 12.5k│ │ ⭐4.9 8.9k │ │ ⭐4.7 15.2k│ │⭐4.6 7.8k││  │
-│  │  │  [已安装]   │ │  [已安装]   │ │  [已安装]   │ │[已安装] ││  │
-│  │  └────────────┘ └────────────┘ └────────────┘ └────────┘│  │
-│  │                                                           │  │
-│  │  ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌────────┐│  │
-│  │  │ Translator │ │  Finance   │ │  Debugger   │ │ Summar ││  │
-│  │  │   Agent    │ │   Agent    │ │   Agent    │ │ Agent  ││  │
-│  │  │ ⭐4.6 9.1k │ │ ⭐4.7 6.2k │ │ ⭐4.2 2.8k │ │⭐4.5 5.3k││  │
-│  │  │  [安装]     │ │  [安装]     │ │  [安装]     │ │ [安装] ││  │
-│  │  └────────────┘ └────────────┘ └────────────┘ └────────┘│  │
-│  │                                                           │  │
-│  └──────────────────────────────────────────────────────────┘  │
-│                                                                │
-│  Installed: 4/12  |  Downloads: 52,500  |  Avg Rating: 4.7   │
-│                                                                │
-└────────────────────────────────────────────────────────────────┘
+# 统计信息
+curl http://localhost:8000/vector-db/stats
 ```
 
 ---
 
-## 📊 Benchmark（性能指标）
+## 🎯 关于前端架构迁移
 
-| 模块 | 指标 | 数值 |
-|------|------|------|
-| **Memory Retrieval** | Top-5 Recall | 94.2% |
-| | Top-10 Recall | 97.8% |
-| | 平均查询时间 | 12ms |
-| **Agent Success Rate** | 任务成功率 | 87% |
-| | 平均执行时间 | 45s |
-| **Knowledge Graph** | 节点数 | 328 |
-| | 边数 | 512 |
-| | 路径查询时间 | 28ms |
-| **RAG Engine** | Context Relevance | 91.3% |
-| | 检索精度 | 89.5% |
+**当前架构：** `backend/static/` (纯 HTML + CSS + JS)
+- ✅ 无需额外依赖
+- ✅ 开发速度快
+- ✅ 适合 V1-V2 阶段
+
+**未来架构：** `frontend/` (Next.js + React)
+- 📅 **V2/V3 阶段后迁移** - 当需要更复杂功能时
+- ✅ 更现代化的开发体验
+- ✅ 更好的性能和可维护性
 
 ---
 
-## 🔌 Plugin SDK（Agent开发）
+## ✅ 测试验证 (v1.5)
 
-第三方开发者可以创建自己的Agent：
+### API 端点测试
 
-```python
-from titanosdk import TitanAgent, Task, Context
+| 端点 | 方法 | 状态 | 说明 |
+|------|------|------|------|
+| `/memory/stats` | GET | ✅ 200 OK | 记忆统计信息 |
+| `/memory/semantic/{query}` | GET | ✅ 200 OK | 语义搜索 |
+| `/chat` | POST | ✅ 200 OK | 聊天功能 |
+| `/chat/history` | GET | ✅ 200 OK | 聊天历史 |
+| `/vector-db/health` | GET | ✅ 200 OK | 向量数据库健康检查 |
+| `/vector-db/stats` | GET | ✅ 200 OK | 向量数据库统计 |
 
-class CrawlerAgent(TitanAgent):
-    name = "CrawlerAgent"
-    description = "专业网页爬虫Agent，支持动态页面抓取"
-    version = "1.0.0"
-    category = "data"
-    
-    async def run(self, task: Task, context: Context) -> dict:
-        """执行爬虫任务"""
-        url = task.params.get("url")
-        depth = task.params.get("depth", 1)
-        
-        # 爬取逻辑
-        results = await self.crawl(url, depth)
-        
-        return {
-            "status": "success",
-            "pages": results,
-            "count": len(results)
-        }
-    
-    async def crawl(self, url: str, depth: int):
-        """爬取实现"""
-        pass
+### 测试结果示例
 
-# 注册Agent
-TitanAgent.register(CrawlerAgent)
+```bash
+# 测试记忆统计
+curl http://localhost:8000/memory/stats
+
+# Response:
+{
+  "total": 14,
+  "avg_importance": 0.57,
+  "avg_access_count": 0.0,
+  "avg_score": 0.439,
+  "top_tags": [["chat", 14], ["user", 7], ["assistant", 7]],
+  "vector_db": {
+    "total": 0,
+    "provider": "in_memory",
+    "health": {"status": "healthy"}
+  }
+}
 ```
 
----
+### 语义搜索测试
 
-## 🌍 World Model（因果预测）
+```bash
+# 测试语义搜索
+curl "http://localhost:8000/memory/semantic/我最近学了什么?limit=5"
 
-TitanOS v1.1 新增核心模块：
-
-```
-行为 → 结果 → 因果关系 → 预测未来
-```
-
-| 组件 | 描述 |
-|------|------|
-| **Event Tracker** | 追踪用户行为和系统事件 |
-| **Causality Engine** | 学习行为与结果的因果关系 |
-| **Prediction Model** | 基于历史预测未来结果 |
-
-**示例**：
-```
-每天学习3小时 + 完成项目练习 + 定期复习
-         ↓
-   技能增长 15%/月
-         ↓
-   面试成功率提升 23%
-         ↓
-   获得理想Offer
+# Response:
+{
+  "query": "我最近学了什么?",
+  "results": [...],
+  "count": 3
+}
 ```
 
 ---
 
-## 🚀 快速开始
+## ⚠️ 故障排除与端口配置
 
-### 系统要求
+### 常见问题
 
-| 组件 | 最低版本 | 推荐版本 |
+#### 1. 前端连接问题
+**错误信息:** `net::ERR_ABORTED http://localhost:3000/`
+
+**可能原因:**
+- 前端开发服务器未启动
+- 端口 3000 被其他程序占用
+- 防火墙阻止了连接
+
+**解决方案:**
+```bash
+# 检查端口是否被占用
+netstat -ano | findstr :3000
+
+# 停止占用端口的进程（替换PID）
+taskkill /F /PID <PID>
+
+# 重新启动前端服务器
+cd frontend
+npm run dev
+```
+
+#### 2. 后端API连接问题
+**错误信息:** `net::ERR_CONNECTION_REFUSED http://127.0.0.1:8000/knowledge/graph`
+
+**可能原因:**
+- 后端服务器未启动
+- 端口配置不一致
+- CORS 配置问题
+
+**解决方案:**
+```bash
+# 启动后端服务器
+cd backend
+python app.py
+
+# 或使用 uvicorn
+uvicorn app:app --host 0.0.0.0 --port 8000
+```
+
+#### 3. Neo4j 连接问题 (`#problems:neo4j_provider.py`)
+**错误信息:** Neo4j 连接失败
+
+**可能原因:**
+- Neo4j 服务未启动
+- 连接配置错误（URI、用户名、密码）
+- Neo4j 认证问题
+
+**解决方案:**
+```bash
+# 启动 Neo4j 服务（根据安装方式）
+# Docker 方式
+docker start neo4j-container
+
+# 本地安装方式
+neo4j start
+
+# 检查连接配置
+# 文件: backend/knowledge_graph/neo4j_provider.py
+# 默认配置: bolt://localhost:7687
+```
+
+### 端口配置说明
+
+| 服务 | 默认端口 | 配置位置 |
 |------|----------|----------|
-| **Python** | 3.8 | 3.10+ |
-| **pip** | 21.0 | 23.0+ |
+| **前端 (Next.js)** | 3000 | `frontend/package.json` |
+| **后端 (FastAPI)** | 8000 | `backend/app.py:1933` |
+| **Neo4j** | 7687 | `backend/knowledge_graph/neo4j_provider.py` |
+| **Qdrant** | 6333 | `backend/vector_db/qdrant.py` |
 
-### 安装
+### 切换端口号
+
+#### 前端端口
+修改 `frontend/package.json`:
+```json
+{
+  "scripts": {
+    "dev": "next dev -p 3001"
+  }
+}
+```
+
+#### 后端端口
+修改 `backend/app.py` (第 1933 行):
+```python
+uvicorn.run(app, host="0.0.0.0", port=8001)
+```
+
+#### 前端API配置
+修改 `frontend/src/pages/index.tsx`:
+```typescript
+const API_BASE = 'http://127.0.0.1:8001';
+```
+
+修改 `frontend/next.config.js`:
+```javascript
+env: {
+  NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001',
+},
+async rewrites() {
+  return [
+    {
+      source: '/api/:path*',
+      destination: 'http://127.0.0.1:8001/:path*',
+    },
+  ]
+}
+```
+
+### 完整启动流程
 
 ```bash
-cd backend
-pip install -r requirements.txt
-```
+# 1. 启动 Neo4j（可选，如果使用知识图谱功能）
+docker run -p 7687:7687 -p 7474:7474 neo4j
 
-### 启动后端
-
-```bash
-python app.py
-```
-
-访问 http://localhost:8000/docs 查看完整API文档
-
-### 访问前端界面
-
-TitanOS 现在提供了一个完整的 Web 界面，启动后端后直接在浏览器访问：
-
-**http://localhost:8000/**
-
-前端界面包含以下功能：
-- 💬 **Chat** - 与 AI 助手对话（模拟）
-- 📊 **Dashboard** - 查看成长仪表盘和统计数据
-- 🧠 **Memory** - 管理和查看记忆
-- 📋 **Planner** - 任务规划
-- 🔗 **Knowledge Graph** - 知识图谱
-- 👤 **Digital Twin** - 数字分身
-
----
-
-## ❓ 常见问题
-
-### 端口被占用怎么办？
-
-**错误信息：**
-```
-ERROR:    [Errno 10048] error while attempting to bind on address ('0.0.0.0', 8000): 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。
-```
-
-**解决方案：**
-
-1. 查看端口占用情况：
-```bash
-netstat -ano | findstr :8000
-```
-
-2. 找到占用端口的进程 PID（例如：68572），然后杀死该进程：
-```bash
-taskkill /PID 68572 /F
-```
-
-3. 或者强制杀死所有 Python 进程（慎用！）：
-```bash
-taskkill /F /IM python.exe
-```
-
-4. 重新启动 TitanOS：
-```bash
+# 2. 启动后端服务
 cd backend
 python app.py
+
+# 3. 启动前端服务
+cd frontend
+npm run dev
+
+# 4. 访问应用
+# 前端: http://localhost:3000
+# 后端API: http://localhost:8000
 ```
 
 ---
 
-## 📁 项目结构
+## 🐛 已知问题修复记录
 
+### #problems:app.py
+**问题描述:** 前端调用了后端不存在的 API 端点
+
+**受影响的端点:**
+- `GET /knowledge/graph` - 前端需要获取知识图谱数据
+- `POST /knowledge/configure` - 前端需要配置 Neo4j 连接
+
+**修复方案:**
+在 `backend/app.py` 中添加了以下缺失的 API 端点：
+
+```python
+@app.get("/knowledge/graph")
+async def get_knowledge_graph():
+    """获取知识图谱数据（用于前端可视化）"""
+    return knowledge_graph.get_graph()
+
+@app.post("/knowledge/configure")
+async def configure_knowledge_graph(uri: str = "bolt://localhost:7687",
+                                    user: str = "neo4j",
+                                    password: str = "password",
+                                    database: str = "neo4j"):
+    """配置 Neo4j 连接（兼容前端调用）"""
+    global knowledge_graph
+    neo4j_config = {
+        "uri": uri,
+        "username": user,
+        "password": password,
+        "database": database
+    }
+    knowledge_graph = KnowledgeGraph(
+        storage_path="database/knowledge_graph.json",
+        use_neo4j=True,
+        neo4j_config=neo4j_config,
+        llm_model="simulated"
+    )
+    return {
+        "status": "configured",
+        "neo4j_connected": knowledge_graph.neo4j_provider.connected if knowledge_graph.neo4j_provider else False,
+        "config": {"uri": uri, "database": database, "user": user}
+    }
 ```
-TitanOS/
-├── backend/
-│   ├── app.py                    # FastAPI主入口
-│   ├── requirements.txt           # 依赖
-│   ├── brain/                     # 推理引擎
-│   ├── memory/                    # 记忆系统
-│   │   └── cognitive/             # 认知记忆
-│   ├── knowledge_graph/           # 知识图谱
-│   ├── planner/                   # 任务规划
-│   ├── agent/                     # Agent运行时
-│   ├── multi_agent/               # 多代理协作
-│   ├── rag/                      # RAG引擎
-│   ├── reflection/                # 反思系统
-│   ├── learning/                 # 学习引擎
-│   ├── digital_twin/             # 数字分身
-│   ├── auth/                     # 用户认证
-│   ├── timeline/                 # 记忆时间线
-│   ├── dashboard/                # 成长仪表盘
-│   ├── goal_tree/                # 目标树
-│   ├── marketplace/              # Agent市场
-│   └── world_model/              # 因果预测 ⭐NEW
-├── docs/                         # 文档
-│   ├── API_REFERENCE.md
-│   ├── DATABASE_DESIGN.md
-│   └── DEPLOYMENT.md
-├── demo/                         # 演示素材 ⭐NEW
-│   ├── screenshots/
-│   └── videos/
-└── README.md
+
+### #problems:neo4j_provider.py
+**问题描述:** Neo4j Python 驱动中的异常处理错误
+
+**错误信息:**
+```
+AttributeError: module 'neo4j.exceptions' has no attribute 'Neo4jException'
 ```
 
+**修复方案:**
+在 `backend/knowledge_graph/neo4j_provider.py` 中将具体的异常类型改为通用异常：
+
+```python
+# 修复前
+except exceptions.Neo4jException as e:
+    print(f"Neo4j connection failed: {e}")
+    return False
+
+# 修复后
+except Exception as e:
+    print(f"Neo4j connection failed: {e}")
+    return False
+```
+
+### #problems:knowledge_graph.py
+**问题描述:** KnowledgeGraph 类缺少 `get_graph()` 方法
+
+**修复方案:**
+在 `backend/knowledge_graph/knowledge_graph.py` 中添加了 `get_graph()` 方法
+
 ---
 
-## 🗓️ 版本路线图
+## 📝 更新日志
 
-| 版本 | 状态 | 功能 |
-|------|------|------|
-| v1.0 | ✅ 已发布 | 核心模块完成（17个模块） |
-| **v1.1** | 🔨 当前 | 界面设计、Model Layer、World Model、Plugin SDK |
-| v1.5 | 📅 计划 | 前端界面、Demo视频 |
-| v2.0 | 📅 计划 | 真实LLM集成、持续学习 |
+### v2.0.2
+- 修复 `#problems:app.py` - 添加缺失的 `/knowledge/graph` 和 `/knowledge/configure` API 端点
+- 修复 `#problems:neo4j_provider.py` - 修复 Neo4j 异常处理
+- 修复 `#problems:knowledge_graph.py` - 添加 `get_graph()` 方法
 
----
-
-## 🤝 贡献
-
-欢迎提交 Issue 和 Pull Request！
-
----
-
-## 📄 License
-
-MIT License
+### v2.0.1
+- 修复前端后端端口配置不一致问题
+- 添加端口配置说明文档
+- 更新故障排除指南
