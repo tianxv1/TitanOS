@@ -6,13 +6,15 @@ from .profile import (
 )
 import json
 import os
+import uuid
 
 
 class DigitalTwin:
-    def __init__(self, storage_path: str = "database/digital_twin.json"):
+    def __init__(self, storage_path: str = "database/digital_twin.json", neo4j_provider=None):
         self.storage_path = storage_path
         self.profile: Optional[DigitalTwinProfile] = None
         self.behavior_history: List[Dict[str, Any]] = []
+        self.neo4j_provider = neo4j_provider
         self._load()
 
     def _load(self):
@@ -68,6 +70,15 @@ class DigitalTwin:
     def initialize(self, name: str = "My Digital Twin"):
         self.profile = DigitalTwinProfile(name=name)
         self._save()
+        
+        # 同步到 Neo4j
+        if self.neo4j_provider and self.neo4j_provider.connected:
+            personality_data = self.profile.personality.to_dict()
+            self.neo4j_provider.create_digital_twin(
+                twin_id=self.profile.id,
+                name=self.profile.name,
+                personality_data=personality_data
+            )
 
     def update_writing_style(self, **kwargs):
         if not self.profile:
@@ -264,6 +275,14 @@ class DigitalTwin:
 
         self.profile.updated_at = self._get_timestamp()
         self._save()
+        
+        # 同步性格更新到 Neo4j
+        if self.neo4j_provider and self.neo4j_provider.connected:
+            personality_data = self.profile.personality.to_dict()
+            self.neo4j_provider.update_digital_twin(
+                twin_id=self.profile.id,
+                updates={"personality": personality_data}
+            )
 
     def _add_behavior(self, behavior_type: str, data: Dict[str, Any]):
         self.behavior_history.append({
@@ -383,3 +402,232 @@ class DigitalTwin:
             return True
         except Exception:
             return False
+
+    # ============ Personality Engine 扩展方法 ============
+
+    def analyze_personality_trait(self, trait: str) -> Dict[str, Any]:
+        """分析特定性格特质"""
+        if not self.profile:
+            return {"error": "Profile not initialized"}
+
+        p = self.profile.personality
+        trait_value = getattr(p, trait, None)
+        
+        if trait_value is None:
+            return {"error": f"Trait '{trait}' not found"}
+
+        trait_descriptions = {
+            "openness": {
+                "description": "开放性 - 对新体验和创意的接受程度",
+                "low": "偏好熟悉的事物，注重实际",
+                "medium": "平衡传统与创新",
+                "high": "富有想象力，喜欢探索新事物"
+            },
+            "conscientiousness": {
+                "description": "尽责性 - 组织和自律的程度",
+                "low": "灵活随性，喜欢即兴",
+                "medium": "有条理但不失灵活",
+                "high": "高度组织化，注重细节"
+            },
+            "extraversion": {
+                "description": "外向性 - 社交互动的偏好程度",
+                "low": "内向，喜欢独处",
+                "medium": "平衡社交与独处",
+                "high": "外向，喜欢社交"
+            },
+            "agreeableness": {
+                "description": "宜人性 - 合作和同理心的程度",
+                "low": "果断自信，坚持己见",
+                "medium": "合作但有原则",
+                "high": "富有同情心，乐于助人"
+            },
+            "neuroticism": {
+                "description": "神经质 - 情绪稳定性",
+                "low": "情绪稳定，心态平和",
+                "medium": "情绪适中",
+                "high": "情绪敏感，容易焦虑"
+            },
+            "creativity_score": {
+                "description": "创造力得分",
+                "low": "注重实用性",
+                "medium": "平衡实用与创意",
+                "high": "富有创意"
+            },
+            "analytical_score": {
+                "description": "分析能力得分",
+                "low": "直觉型思考",
+                "medium": "平衡直觉与分析",
+                "high": "逻辑分析能力强"
+            },
+            "sociability_score": {
+                "description": "社交能力得分",
+                "low": "偏好独处",
+                "medium": "平衡社交需求",
+                "high": "善于社交"
+            }
+        }
+
+        description = trait_descriptions.get(trait, {"description": trait})
+        
+        if trait_value < 0.3:
+            level = "low"
+        elif trait_value < 0.7:
+            level = "medium"
+        else:
+            level = "high"
+
+        return {
+            "trait": trait,
+            "value": trait_value,
+            "level": level,
+            "description": description["description"],
+            "interpretation": description.get(level, "未知")
+        }
+
+    def get_personality_summary(self) -> Dict[str, Any]:
+        """获取完整的性格摘要"""
+        if not self.profile:
+            return {"error": "Profile not initialized"}
+
+        p = self.profile.personality
+        
+        traits = ["openness", "conscientiousness", "extraversion", 
+                  "agreeableness", "neuroticism", "creativity_score",
+                  "analytical_score", "sociability_score"]
+        
+        summary = {
+            "overall": {},
+            "traits": {}
+        }
+
+        for trait in traits:
+            summary["traits"][trait] = self.analyze_personality_trait(trait)
+
+        # 计算综合性格类型
+        avg_extraversion = p.extraversion
+        avg_openness = p.openness
+        avg_conscientiousness = p.conscientiousness
+        
+        if avg_extraversion > 0.6:
+            summary["overall"]["social_type"] = "外向型"
+        elif avg_extraversion < 0.4:
+            summary["overall"]["social_type"] = "内向型"
+        else:
+            summary["overall"]["social_type"] = "中间型"
+
+        if avg_openness > 0.6:
+            summary["overall"]["thinking_style"] = "创新型"
+        elif avg_conscientiousness > 0.6:
+            summary["overall"]["thinking_style"] = "务实型"
+        else:
+            summary["overall"]["thinking_style"] = "平衡型"
+
+        return summary
+
+    def predict_behavior(self, scenario: str) -> Dict[str, Any]:
+        """基于性格预测行为倾向"""
+        if not self.profile:
+            return {"error": "Profile not initialized"}
+
+        p = self.profile.personality
+        predictions = []
+
+        # 根据五大人格特质生成预测
+        if p.conscientiousness > 0.7:
+            predictions.append({
+                "behavior": "倾向于提前规划和准备",
+                "confidence": p.conscientiousness,
+                "trait": "conscientiousness"
+            })
+        
+        if p.extraversion > 0.7:
+            predictions.append({
+                "behavior": "倾向于主动社交和互动",
+                "confidence": p.extraversion,
+                "trait": "extraversion"
+            })
+        
+        if p.openness > 0.7:
+            predictions.append({
+                "behavior": "倾向于尝试新方法和创意解决方案",
+                "confidence": p.openness,
+                "trait": "openness"
+            })
+        
+        if p.agreeableness > 0.7:
+            predictions.append({
+                "behavior": "倾向于合作和帮助他人",
+                "confidence": p.agreeableness,
+                "trait": "agreeableness"
+            })
+        
+        if p.neuroticism < 0.3:
+            predictions.append({
+                "behavior": "面对压力时保持冷静",
+                "confidence": 1 - p.neuroticism,
+                "trait": "neuroticism"
+            })
+
+        return {
+            "scenario": scenario,
+            "predictions": predictions,
+            "confidence_level": sum(p["confidence"] for p in predictions) / max(len(predictions), 1)
+        }
+
+    def find_similar_twins(self, similarity_threshold: float = 0.7) -> List[Dict[str, Any]]:
+        """查找相似的数字分身（通过 Neo4j）"""
+        if not self.neo4j_provider or not self.neo4j_provider.connected:
+            return []
+
+        if not self.profile:
+            return []
+
+        personality_data = self.profile.personality.to_dict()
+        return self.neo4j_provider.find_personality_matches(
+            personality_profile=personality_data,
+            similarity_threshold=similarity_threshold
+        )
+
+    def record_interaction(self, interaction_type: str, context: str, 
+                          response: str, feedback: float = 0.0):
+        """记录交互并同步到 Neo4j"""
+        if not self.profile:
+            self.initialize()
+
+        self._add_behavior(interaction_type, {
+            "context": context,
+            "response": response,
+            "feedback": feedback
+        })
+
+        # 同步到 Neo4j
+        if self.neo4j_provider and self.neo4j_provider.connected:
+            self.neo4j_provider.record_twin_interaction(
+                twin_id=self.profile.id,
+                interaction_type=interaction_type,
+                context=context,
+                response=response,
+                feedback=feedback
+            )
+
+    def link_knowledge(self, entity_id: str, confidence: float = 1.0):
+        """将知识实体与数字分身关联"""
+        if not self.profile:
+            self.initialize()
+
+        if self.neo4j_provider and self.neo4j_provider.connected:
+            self.neo4j_provider.add_twin_knowledge(
+                twin_id=self.profile.id,
+                entity_id=entity_id,
+                confidence=confidence
+            )
+
+    def get_linked_knowledge(self) -> List[Dict[str, Any]]:
+        """获取数字分身关联的知识"""
+        if not self.neo4j_provider or not self.neo4j_provider.connected:
+            return []
+
+        if not self.profile:
+            return []
+
+        return self.neo4j_provider.get_twin_knowledge(twin_id=self.profile.id)

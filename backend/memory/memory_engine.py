@@ -7,11 +7,18 @@ from .memory_score import MemoryScore
 
 
 class MemoryEngine:
-    def __init__(self, storage_path: str = "database/memories.json"):
+    def __init__(
+        self,
+        storage_path: str = "database/memories.json",
+        embedding_service=None,
+        vector_db_manager=None
+    ):
         self.storage_path = storage_path
         self.memories: Dict[str, Memory] = {}
         self.score_threshold = 0.3
         self.max_memories = 10000
+        self.embedding_service = embedding_service
+        self.vector_db_manager = vector_db_manager
         self._load()
 
     def _load(self):
@@ -37,6 +44,9 @@ class MemoryEngine:
     def add(self, content: str, importance: float = 0.5,
             tags: Optional[List[str]] = None,
             embedding: Optional[List[float]] = None) -> Memory:
+        if embedding is None and self.embedding_service:
+            embedding = self.embedding_service.embed_text(content)
+
         memory = Memory(
             content=content,
             importance=importance,
@@ -44,6 +54,19 @@ class MemoryEngine:
             embedding=embedding
         )
         self.memories[memory.id] = memory
+
+        if self.vector_db_manager and embedding:
+            self.vector_db_manager.upsert_memory(
+                memory_id=memory.id,
+                content=content,
+                embedding=embedding,
+                metadata={
+                    "importance": importance,
+                    "tags": tags or [],
+                    "created_at": memory.timestamp.isoformat()
+                }
+            )
+
         self._cleanup()
         self._save()
         return memory
@@ -69,6 +92,22 @@ class MemoryEngine:
                 results.append(memory)
         results.sort(key=lambda m: MemoryScore.calculate_score(m), reverse=True)
         return results[:limit]
+
+    def semantic_search(self, query: str, limit: int = 10) -> List[Memory]:
+        if not self.vector_db_manager or not self.embedding_service:
+            return self.search(query, limit)
+
+        try:
+            results = self.vector_db_manager.search_memories(query, top_k=limit)
+            memories = []
+            for result in results:
+                memory = self.memories.get(result.id)
+                if memory:
+                    memories.append(memory)
+            return memories
+        except Exception as e:
+            print(f"Semantic search failed: {e}")
+            return self.search(query, limit)
 
     def search_by_tags(self, tags: List[str], limit: int = 10) -> List[Memory]:
         results = []
@@ -102,6 +141,8 @@ class MemoryEngine:
     def delete(self, memory_id: str) -> bool:
         if memory_id in self.memories:
             del self.memories[memory_id]
+            if self.vector_db_manager:
+                self.vector_db_manager.delete_memory(memory_id)
             self._save()
             return True
         return False
@@ -114,6 +155,8 @@ class MemoryEngine:
 
         for memory_id in to_delete:
             del self.memories[memory_id]
+            if self.vector_db_manager:
+                self.vector_db_manager.delete_memory(memory_id)
 
         if len(self.memories) > self.max_memories:
             scored = MemoryScore.get_all_scores(self.memories.values())
@@ -121,6 +164,8 @@ class MemoryEngine:
             excess = len(scored) - self.max_memories
             for memory_id, _ in scored[:excess]:
                 del self.memories[memory_id]
+                if self.vector_db_manager:
+                    self.vector_db_manager.delete_memory(memory_id)
 
     def get_stats(self) -> Dict[str, Any]:
         memories_list = list(self.memories.values())
@@ -142,13 +187,42 @@ class MemoryEngine:
 
         top_tags = sorted(tag_counts.items(), key=lambda x: x[1], reverse=True)[:10]
 
+        vector_stats = {}
+        if self.vector_db_manager:
+            vector_stats = self.vector_db_manager.get_stats()
+
         return {
             "total": len(memories_list),
             "avg_importance": round(sum(m.importance for m in memories_list) / len(memories_list), 3),
             "avg_access_count": round(sum(m.access_count for m in memories_list) / len(memories_list), 2),
             "avg_score": round(avg_score, 3),
-            "top_tags": top_tags
+            "top_tags": top_tags,
+            "vector_db": vector_stats
         }
+
+    def sync_to_vector_db(self) -> int:
+        if not self.vector_db_manager or not self.embedding_service:
+            return 0
+
+        count = 0
+        for memory in self.memories.values():
+            if memory.embedding is None:
+                memory.embedding = self.embedding_service.embed_text(memory.content)
+
+            success = self.vector_db_manager.upsert_memory(
+                memory_id=memory.id,
+                content=memory.content,
+                embedding=memory.embedding,
+                metadata={
+                    "importance": memory.importance,
+                    "tags": memory.tags,
+                    "created_at": memory.timestamp.isoformat()
+                }
+            )
+            if success:
+                count += 1
+
+        return count
 
     def form_experience(self, task: str, result: str, time_taken: str, lesson: str) -> Memory:
         content = f"任务: {task}\n结果: {result}\n用时: {time_taken}\n经验: {lesson}"

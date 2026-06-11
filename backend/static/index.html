@@ -1135,6 +1135,21 @@
                     <p>Your life events organized chronologically</p>
                 </div>
                 <div class="content-body">
+                    <div class="search-section" style="margin-bottom: 20px; padding: 15px; background: #141A26; border-radius: 8px; border: 1px solid #1E293B;">
+                        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 20px; height: 20px; color: #7C3AED;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            <span style="color: #E2E8F0; font-weight: 500;">Semantic Search (Powered by Vector DB)</span>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="semantic-search-input" placeholder="Search memories with natural language... (e.g., 'What did I learn about Python?')" style="flex: 1; padding: 10px 15px; background: #0B0F19; border: 1px solid #1E293B; border-radius: 6px; color: #E2E8F0; font-size: 14px;">
+                            <button onclick="performSemanticSearch()" style="padding: 10px 20px; background: linear-gradient(135deg, #7C3AED, #22D3EE); border: none; border-radius: 6px; color: white; font-weight: 500; cursor: pointer;">Search</button>
+                            <button onclick="syncToVectorDB()" style="padding: 10px 20px; background: #1E293B; border: 1px solid #7C3AED; border-radius: 6px; color: #7C3AED; font-weight: 500; cursor: pointer;">Sync</button>
+                        </div>
+                        <div id="vector-db-status" style="margin-top: 10px; font-size: 12px; color: #64748B;"></div>
+                        <div id="semantic-search-results" style="margin-top: 15px;"></div>
+                    </div>
                     <div class="timeline">
                         <div class="timeline-year">
                             <div class="timeline-year-header">2026</div>
@@ -1436,8 +1451,14 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const now = new Date();
-            document.getElementById('welcomeTime').textContent = now.toLocaleTimeString();
+            const chatForm = document.getElementById('chatForm');
+            const chatInput = document.getElementById('chatInput');
+            const chatMessages = document.getElementById('chatMessages');
+            
+            let isLoading = false;
+
+            // Load chat history on page load
+            loadChatHistory();
 
             const navItems = document.querySelectorAll('.nav-item');
             navItems.forEach(item => {
@@ -1448,56 +1469,115 @@
                     const tabId = this.dataset.tab;
                     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
                     document.getElementById(tabId).classList.add('active');
+                    
+                    // Load tab-specific data when switching tabs
+                    if (tabId === 'memory') {
+                        loadMemoryStats();
+                    }
                 });
             });
 
-            const chatForm = document.getElementById('chatForm');
-            const chatInput = document.getElementById('chatInput');
-            const chatMessages = document.getElementById('chatMessages');
+            async function loadChatHistory() {
+                try {
+                    const response = await fetch('/chat/history');
+                    const data = await response.json();
+                    
+                    if (data.messages && data.messages.length > 0) {
+                        chatMessages.innerHTML = '';
+                        data.messages.forEach(msg => {
+                            appendMessage(msg.role, msg.content, msg.timestamp);
+                        });
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    } else {
+                        const now = new Date();
+                        appendWelcomeMessage(now);
+                    }
+                } catch (error) {
+                    console.error('Error loading chat history:', error);
+                    const now = new Date();
+                    appendWelcomeMessage(now);
+                }
+            }
+            
+            function appendWelcomeMessage(time) {
+                appendMessage('assistant', '你好！我是 TitanOS，你的个人 AI 助手。我拥有记忆、推理、规划和学习能力。有什么我可以帮你的吗？', time.toLocaleTimeString());
+            }
 
-            chatForm.addEventListener('submit', function(e) {
+            async function loadMemoryStats() {
+                try {
+                    const response = await fetch('/memory/stats');
+                    const stats = await response.json();
+                    console.log('Memory stats:', stats);
+                } catch (error) {
+                    console.error('Error loading memory stats:', error);
+                }
+            }
+
+            chatForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
+                
+                if (isLoading) return;
+                
                 const message = chatInput.value.trim();
                 if (!message) return;
-
+                
+                isLoading = true;
+                chatInput.value = '';
+                
                 const userTime = new Date().toLocaleTimeString();
-                const userDiv = document.createElement('div');
-                userDiv.className = 'message user';
-                userDiv.innerHTML = `
+                appendMessage('user', message, userTime);
+                
+                try {
+                    const response = await fetch('/chat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            message: message,
+                            store_to_memory: true,
+                            importance: 0.6
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to send message');
+                    }
+                    
+                    const data = await response.json();
+                    const assistantTime = new Date().toLocaleTimeString();
+                    appendMessage('assistant', data.message.content, assistantTime);
+                    
+                } catch (error) {
+                    console.error('Error sending message:', error);
+                    const errorTime = new Date().toLocaleTimeString();
+                    appendMessage('assistant', '抱歉，发生了错误。请稍后再试。', errorTime);
+                } finally {
+                    isLoading = false;
+                }
+            });
+
+            function appendMessage(role, content, time) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${role}`;
+                
+                const avatarSvg = role === 'assistant' 
+                    ? `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>`
+                    : `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>`;
+                
+                messageDiv.innerHTML = `
                     <div class="message-avatar">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
+                        ${avatarSvg}
                     </div>
                     <div class="message-content">
-                        <div class="message-text">${escapeHtml(message)}</div>
-                        <div class="message-time">${userTime}</div>
+                        <div class="message-text">${escapeHtml(content)}</div>
+                        <div class="message-time">${time}</div>
                     </div>
                 `;
-                chatMessages.appendChild(userDiv);
-                chatInput.value = '';
-
-                setTimeout(() => {
-                    const assistantTime = new Date().toLocaleTimeString();
-                    const assistantDiv = document.createElement('div');
-                    assistantDiv.className = 'message assistant';
-                    assistantDiv.innerHTML = `
-                        <div class="message-avatar">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                            </svg>
-                        </div>
-                        <div class="message-content">
-                            <div class="message-text">收到你的消息！这是 TitanOS 的演示回复。</div>
-                            <div class="message-time">${assistantTime}</div>
-                        </div>
-                    `;
-                    chatMessages.appendChild(assistantDiv);
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-                }, 800);
-
+                
+                chatMessages.appendChild(messageDiv);
                 chatMessages.scrollTop = chatMessages.scrollHeight;
-            });
+            }
         });
 
         function escapeHtml(text) {

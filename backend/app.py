@@ -1424,6 +1424,89 @@ async def get_recommendations():
     return {"recommendations": dashboard._generate_recommendations(metrics)}
 
 
+# ==========================================
+# Behavior Analytics API (Task 10)
+# ==========================================
+from analytics.behavior_analytics import BehaviorAnalytics
+
+behavior_analytics = BehaviorAnalytics()
+
+
+class ActivityRecord(BaseModel):
+    activity_type: str
+    duration_minutes: float
+    metadata: Optional[Dict[str, Any]] = None
+
+
+@app.get("/analytics/metrics")
+async def get_behavior_metrics(days: int = 30):
+    """获取行为指标"""
+    from datetime import timedelta
+    end_date = datetime.now()
+    start_date = end_date - timedelta(days=days)
+    metrics = behavior_analytics.get_metrics(start_date, end_date)
+    return metrics.to_dict()
+
+
+@app.post("/analytics/activity")
+async def record_activity(activity: ActivityRecord):
+    """记录活动"""
+    behavior_analytics.record_activity(
+        activity_type=activity.activity_type,
+        duration_minutes=activity.duration_minutes,
+        metadata=activity.metadata
+    )
+    return {"status": "recorded", "activity_type": activity.activity_type}
+
+
+@app.get("/analytics/weekly-report")
+async def get_weekly_report():
+    """获取周报"""
+    report = behavior_analytics.get_weekly_report()
+    return report.to_dict()
+
+
+@app.get("/analytics/monthly-report")
+async def get_monthly_report(year: Optional[int] = None, month: Optional[int] = None):
+    """获取月报"""
+    report = behavior_analytics.get_monthly_report(year, month)
+    return report.to_dict()
+
+
+@app.get("/analytics/chart-data")
+async def get_activity_chart_data(days: int = 30):
+    """获取活动图表数据"""
+    return behavior_analytics.get_activity_chart_data(days)
+
+
+@app.get("/analytics/category-breakdown")
+async def get_category_breakdown(days: int = 30):
+    """获取活动类别分解"""
+    return behavior_analytics.get_category_breakdown(days)
+
+
+@app.get("/analytics/hourly-distribution")
+async def get_hourly_distribution(days: int = 30):
+    """获取每小时活动分布"""
+    return behavior_analytics.get_hourly_distribution(days)
+
+
+@app.get("/analytics/summary")
+async def get_analytics_summary():
+    """获取分析摘要"""
+    weekly = behavior_analytics.get_weekly_report()
+    category = behavior_analytics.get_category_breakdown(30)
+    
+    return {
+        "weekly_metrics": weekly.metrics.to_dict(),
+        "achievements": weekly.achievements,
+        "recommendations": weekly.recommendations,
+        "top_activities": weekly.top_activities,
+        "category_distribution": category["percentages"],
+        "streak_days": weekly.metrics.streak_days
+    }
+
+
 @app.post("/goal-tree/goal")
 async def create_goal(data: GoalCreate):
     deadline = datetime.fromisoformat(data.deadline) if data.deadline else None
@@ -1867,6 +1950,112 @@ async def clear_chat_history():
     """Clear chat history"""
     chat_engine.clear()
     return {"status": "cleared"}
+
+
+# ==========================================
+# LLM Chat API (v1.0 - DeepSeek/OpenAI Integration)
+# ==========================================
+from fastapi.responses import StreamingResponse
+from llm.llm_service import llm_service
+
+
+class LLMChatRequest(BaseModel):
+    message: str
+    session_id: Optional[str] = None
+    system_prompt: Optional[str] = None
+    store_to_memory: bool = True
+
+
+class LLMConfigRequest(BaseModel):
+    provider: str = "deepseek"  # deepseek, openai, simulated
+    api_key: str
+    model: Optional[str] = None
+    base_url: Optional[str] = None
+
+
+@app.post("/chat/llm")
+async def chat_with_llm(request: LLMChatRequest):
+    """Send a chat message and get AI response using LLM"""
+    result = await chat_engine.chat(
+        message=request.message,
+        session_id=request.session_id,
+        system_prompt=request.system_prompt
+    )
+    
+    # Store to memory if requested
+    if request.store_to_memory:
+        memory_engine.add(
+            content=f"User: {request.message}",
+            importance=0.6,
+            tags=["chat", "user", "llm"]
+        )
+        memory_engine.add(
+            content=f"Assistant: {result['response']}",
+            importance=0.5,
+            tags=["chat", "assistant", "llm"]
+        )
+    
+    return {
+        "response": result["response"],
+        "user_message": result["user_message"],
+        "assistant_message": result["assistant_message"],
+        "session_id": result["session_id"],
+        "status": "success"
+    }
+
+
+@app.post("/chat/llm/stream")
+async def chat_with_llm_stream(request: LLMChatRequest):
+    """Send a chat message and get streaming AI response using LLM (SSE)"""
+    
+    async def generate():
+        async for chunk in chat_engine.chat_stream(
+            message=request.message,
+            session_id=request.session_id,
+            system_prompt=request.system_prompt
+        ):
+            yield chunk
+    
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no"
+        }
+    )
+
+
+@app.get("/llm/config")
+async def get_llm_config():
+    """Get current LLM configuration"""
+    return llm_service.get_config()
+
+
+@app.post("/llm/config")
+async def set_llm_config(request: LLMConfigRequest):
+    """Configure LLM service"""
+    config = chat_engine.configure_llm(
+        provider=request.provider,
+        api_key=request.api_key,
+        model=request.model,
+        base_url=request.base_url
+    )
+    return {
+        "status": "configured",
+        "config": config
+    }
+
+
+@app.get("/llm/status")
+async def get_llm_status():
+    """Get LLM service status"""
+    return {
+        "configured": llm_service.is_configured(),
+        "provider": llm_service.config.provider,
+        "model": llm_service.config.model
+    }
 
 
 # ==================== Vector DB API Endpoints (v1.5) ====================
